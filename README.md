@@ -97,7 +97,7 @@ python app/main.py
 - Consultez les tableaux de bord via le frontend (accédez à index.html dans votre navigateur).
 
 ### Contributors
-Anas Kotoub : Backend
-Iliana Benchikh : Backend
-Brahim Chaouki : Frontend
+Anas Kotoub : Backend\
+Iliana Benchikh : Backend\
+Brahim Chaouki : Frontend\
 Akram Mahboubi : Frontend
