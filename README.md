@@ -4,13 +4,13 @@
 Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'analyse, et la visualisation de données historiques sur les pandémies. L'application permettra aux chercheurs et aux décideurs de consulter des tableaux de bord interactifs et de modéliser des données pour formuler des hypothèses prédictives.
 
 ## Table of Contents
-- [Features](#features)
-- [Technologies](#technologies)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributors](#contributors)
-- [License](#license)
+[Features](#features)
+[Technologies](#technologies)
+[Architecture](#architecture)
+[Installation](#installation)
+[Usage](#usage)
+[Contributors](#contributors)
+[License](#license)
 
 ## Features
 - Collecte de données à partir de fichiers JSON et CSV.
@@ -21,24 +21,24 @@ Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'a
 
 ## Technologies
 ### Backend
-- Python (Flask/FastAPI)
-- MySQL
-- Pandas (pour le nettoyage des données)
+Python (Flask/FastAPI)\
+MySQL\
+Pandas (pour le nettoyage des données)
 
 ### Frontend
-- HTML5
-- CSS/SCSS
-- JavaScript (avec librairies comme D3.js ou Chart.js pour les visualisations)
+HTML5\
+CSS/SCSS\
+JavaScript (avec librairies comme D3.js ou Chart.js pour les visualisations)
 
 ### Outils de Documentation
-- Draw.io (modélisation des données)
-- Swagger (documentation API)
-- Figma (maquettes UI/UX)
+Draw.io (modélisation des données)\
+Swagger (documentation API)\
+Figma (maquettes UI/UX)
 
 ### Gestion de Projet
-- GitHub (versioning)
-- GanttProject (planification)
-- Méthodologie Agile
+GitHub (versioning)\
+GanttProject (planification)\
+Méthodologie Agile
 
 ## Architecture
 ```bash
