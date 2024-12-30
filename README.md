@@ -10,7 +10,6 @@ Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'a
 [Installation](#installation)\
 [Usage](#usage)\
 [Contributors](#contributors)\
-[License](#license)
 
 ## Features
 - Collecte de données à partir de fichiers JSON et CSV.
