@@ -4,12 +4,12 @@
 Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'analyse, et la visualisation de données historiques sur les pandémies. L'application permettra aux chercheurs et aux décideurs de consulter des tableaux de bord interactifs et de modéliser des données pour formuler des hypothèses prédictives.
 
 ## Table of Contents
-[Features](#features)
-[Technologies](#technologies)
-[Architecture](#architecture)
-[Installation](#installation)
-[Usage](#usage)
-[Contributors](#contributors)
+[Features](#features)\
+[Technologies](#technologies)\
+[Architecture](#architecture)\
+[Installation](#installation)\
+[Usage](#usage)\
+[Contributors](#contributors)\
 [License](#license)
 
 ## Features
