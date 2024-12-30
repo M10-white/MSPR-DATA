@@ -1,0 +1,14 @@
+
+@import 'variables';
+@import 'mixins';
+@import 'base';
+
+/* Styles spécifiques des composants */
+@import 'styles_components/header';
+@import 'styles_components/footer';
+@import 'styles_components/dashboard';
+@import 'styles_components/chart';
+@import 'styles_components/table';
+@import 'styles_components/filter-bar';
+
+/*# sourceMappingURL=main.css.map */

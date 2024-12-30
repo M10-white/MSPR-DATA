@@ -1,0 +1,22 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: $primary-color;
+    color: #fff;
+
+    .nav ul {
+        list-style: none;
+        display: flex;
+        gap: 1rem;
+
+        a {
+            text-decoration: none;
+            color: #fff;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
