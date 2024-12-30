@@ -1,16 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Tableaux de Bord des Pandémies</title>
     <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/x-icon" href="assets/icons/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> <!-- Pour les graphiques -->
+    <script src="scripts/main.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1>Tableaux de Bord des Pandémies</h1>
-    </header>
-    <main id="dashboard"></main>
-    <script src="scripts/main.js" defer></script>
+    <!-- Header -->
+    <div id="header"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Dashboard -->
+        <section id="dashboard"></section>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer"></div>
 </body>
 </html>

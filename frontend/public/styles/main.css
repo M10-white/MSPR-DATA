@@ -3,6 +3,9 @@
 @import 'mixins';
 @import 'base';
 
+/* Animations */
+@import 'animations';
+
 /* Styles spécifiques des composants */
 @import 'styles_components/header';
 @import 'styles_components/footer';
