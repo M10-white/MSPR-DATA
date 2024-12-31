@@ -10,9 +10,9 @@ function addAnimations() {
 // Ajout d'un appel à cette fonction après le chargement des composants
 document.addEventListener('DOMContentLoaded', async () => {
     const components = [
-        { id: 'header', file: '../../components' },
-        { id: 'dashboard', file: '../../components/dashboard.html' },
-        { id: 'footer', file: '../../components/footer.html' }
+        { id: 'header', file: '../components/header.html' },
+        { id: 'dashboard', file: '../components/dashboard.html' },
+        { id: 'footer', file: '../components/footer.html' }
     ];
 
     for (const { id, file } of components) {
@@ -21,11 +21,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById(id).innerHTML = html;
     }
 
-    // Charger les sous-composants du Dashboard
+    // Charge les sous-composants du Dashboard
     const dashboardComponents = [
-        { id: 'filter-bar', file: '../../components/filter-bar.html' },
-        { id: 'charts', file: '../../components/chart.html' },
-        { id: 'data-table', file: '../../components/table.html' }
+        { id: 'filter-bar', file: '../components/filter-bar.html' },
+        { id: 'charts', file: '../components/chart.html' },
+        { id: 'data-table', file: '../components/table.html' }
     ];
 
     for (const { id, file } of dashboardComponents) {
@@ -34,6 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelector(`.${id}`).innerHTML = html;
     }
 
-    // Ajouter les animations
+    // Faut ajouter les animations ici
     addAnimations();
 });
