@@ -1,0 +1,14 @@
+@import './_variables.scss';
+@import './_mixins.scss';
+@import './_base.scss';
+
+/* Animations */
+@import './_animations.scss';
+
+/* Styles spécifiques des composants */
+@import './styles_components/_header.scss';
+@import './styles_components/_footer.scss';
+@import './styles_components/_dashboard.scss';
+@import './styles_components/_chart.scss';
+@import './styles_components/_table.scss';
+@import './styles_components/_filter-bar.scss';

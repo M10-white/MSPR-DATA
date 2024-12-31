@@ -1,17 +1,103 @@
+@charset "UTF-8";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-@import './_variables.scss';
-@import './_mixins.scss';
-@import './_base.scss';
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
 
 /* Animations */
-@import './_animations.scss';
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.5s ease-out forwards;
+}
 
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* Styles spécifiques des composants */
-@import './styles_components/_header.scss';
-@import './styles_components/_footer.scss';
-@import './styles_components/_dashboard.scss';
-@import './styles_components/_chart.scss';
-@import './styles_components/_table.scss';
-@import './styles_components/_filter-bar.scss';
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #3498db;
+  color: #fff;
+}
+.header .nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+.header .nav ul a {
+  text-decoration: none;
+  color: #fff;
+}
+.header .nav ul a:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #2ecc71;
+  color: #fff;
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+.dashboard .charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.chart {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+.data-table th {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.filter-bar label {
+  font-weight: bold;
+}
+.filter-bar select, .filter-bar input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
 
 /*# sourceMappingURL=main.css.map */
