@@ -3,7 +3,7 @@ function addAnimations() {
 
     elementsToAnimate.forEach((element, index) => {
         element.classList.add('fade-in');
-        element.style.animationDelay = `${index * 0.2}s`; // Ajoute un délai pour chaque élément
+        element.style.animationDelay = `${index * 0.2}s`;
     });
 }
 
