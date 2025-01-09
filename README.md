@@ -20,24 +20,24 @@ Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'a
 
 ## Technologies
 ### Backend
-Python (Flask/FastAPI)\
-MySQL\
-Pandas (pour le nettoyage des données)
+  Python (Flask/FastAPI)\
+  MySQL\
+  Pandas (pour le nettoyage des données)
 
 ### Frontend
-HTML5\
-CSS/SCSS\
-JavaScript (avec librairies comme D3.js ou Chart.js pour les visualisations)
+  HTML5\
+  CSS/SCSS\
+  JavaScript (avec librairies comme D3.js ou Chart.js pour les visualisations)
 
 ### Outils de Documentation
-Draw.io (modélisation des données)\
-Swagger (documentation API)\
-Figma (maquettes UI/UX)
+  Draw.io (modélisation des données)\
+  Swagger (documentation API)\
+  Figma (maquettes UI/UX)
 
 ### Gestion de Projet
-GitHub (versioning)\
-GanttProject (planification)\
-Méthodologie Agile
+  GitHub (versioning)\
+  GanttProject (planification)\
+  Méthodologie Agile
 
 ## Architecture
 ```bash
