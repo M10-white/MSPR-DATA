@@ -37,7 +37,6 @@ body {
   align-items: center;
 }
 .header .logo {
-  width: 50px;
   height: auto;
   margin-right: 10px;
 }
@@ -52,6 +51,14 @@ body {
 }
 .header .nav ul a:hover {
   text-decoration: underline;
+}
+.header .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-img {
+  height: auto;
 }
 
 .footer {
@@ -131,5 +138,3 @@ html, body {
   background-color: #f8f8f8;
   text-align: center;
 }
-
-/*# sourceMappingURL=main.css.map */
