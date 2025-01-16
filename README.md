@@ -90,6 +90,15 @@ python app/main.py
 ```
 
 5. Lancer un serveur local pour accéder au projet
+Avant tout cela verifiez que vous avez Node.js d'installer.
+```bash
+node -v
+```
+Ensuite installez http-server.
+```bash
+npm install -g http-server
+```
+Puis lancez le server local.
 ```bash
 cd .\frontend\public\ 
 ```
