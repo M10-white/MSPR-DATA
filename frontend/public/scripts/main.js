@@ -34,6 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelector(`.${id}`).innerHTML = html;
     }
 
-    // Faut ajouter les animations ici
+    // Faut ajouter d'autres animations ici
     addAnimations();
 });
