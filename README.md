@@ -89,7 +89,13 @@ pip install -r requirements.txt
 python app/main.py
 ```
 
-5. Accédez au répertoire frontend pour configurer les styles ou scripts.
+5. Lancer un serveur local pour accéder au projet
+```bash
+cd .\frontend\public\ 
+```
+```bash
+http-server -p 8000
+```
 
 ### Usage
 - Accédez à l'application backend sur http://localhost:5000 (par défaut).
