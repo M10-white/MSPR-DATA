@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
 :root {
     --space: 1rem;
     --bg: #09090b;
@@ -43,6 +45,41 @@
       --max: 60rem;
     }
   }
+
+  .card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space);
+    padding: var(--space);
+    margin: auto;
+    max-width: 60rem;
+  }
+
+  h3 {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.8rem;
+    color: var(--surface-2);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    font-family: 'Poppins', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid var(--surface-2);
+    display: inline-block;
+    padding-bottom: 5px;
+    transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+
+  h3:hover {
+    transform: scale(1.05);
+    color: var(--highlight);
+    border-bottom: 2px solid var(--fg);
+  }
   
   .card {
     position: relative;
@@ -55,6 +92,7 @@
     isolation: isolate;
     transition: border-color 200ms var(--ease-out);
     user-select: none;
+    cursor: pointer;
   
     &::before {
       content: "";
