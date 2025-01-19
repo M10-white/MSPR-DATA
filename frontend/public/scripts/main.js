@@ -11,8 +11,8 @@ function addAnimations() {
 document.addEventListener('DOMContentLoaded', async () => {
     const components = [
         { id: 'header', file: '../components/header.html' },
-        { id: 'dashboard', file: '../components/dashboard.html' },
-        { id: 'footer', file: '../components/footer.html' }
+        { id: 'dashboard', file: '../components/dashboard.html' }
+        // { id: 'footer', file: '../components/footer.html' }
     ];
 
     for (const { id, file } of components) {
