@@ -69,7 +69,7 @@ MSPR-DATA/
 ### Étapes
 1. Clonez le dépôt :
 ```bash
-git clone https://github.com/username/project-name.git
+git clone https://github.com/M10-white/MSPR-DATA.git
 ```
 
 2. Accédez au répertoire backend et installez les dépendances Python :
