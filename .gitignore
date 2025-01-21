@@ -1,2 +1,2 @@
 **/.vscode
-**/frontend/public/node_modules
+#**/frontend/public/node_modules
