@@ -85,6 +85,7 @@ pip install -r requirements.txt
 - Importez le fichier schema.sql situé dans docs/database/.
 
 4. Démarrer le serveur FastAPI:
+   
 Pour démarrer l'application FastAPI, on utilise Uvicorn.\
 Exécutez la commande suivante dans le répertoire où se trouve main.py :
 ```bash
