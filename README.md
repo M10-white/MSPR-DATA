@@ -92,7 +92,7 @@ Exécutez la commande suivante dans le répertoire où se trouve main.py :
 uvicorn app.main:app --reload
 ```
 
-5. Lancer un serveur local pour accéder au projet
+5. Lancer un serveur local pour accéder au front
 Avant tout cela verifiez que vous avez Node.js d'installer.
 ```bash
 node -v
