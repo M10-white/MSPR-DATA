@@ -113,6 +113,10 @@ http-server -p 8000
 - Accédez à l'application backend sur http://localhost:5000 (par défaut).
 - Consultez les tableaux de bord via le frontend (accédez à index.html dans votre navigateur).
 
+### Features
+Encapsulation avec Docker
+Multi-languages
+
 ### Contributors
 Anas Kotoub : Backend\
 Iliana Benchikh : Backend\
