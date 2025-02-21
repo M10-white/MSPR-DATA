@@ -10,18 +10,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fonction pour faire une requête API
     async function fetchData(url) {
-        const response = await fetch(url, {
-            mode: 'cors'
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        try {
+            console.log(`Fetching data from ${url}`);
+            const response = await fetch(url, {
+                mode: 'cors' // S'assurer que CORS est bien activé
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log(`Données reçues de ${url}:`, data);
+            return data;
+        } catch (error) {
+            console.error(`Erreur lors de la récupération des données depuis ${url}:`, error);
+            return null;
         }
-        return response.json();
     }
 
     // Fonction pour afficher les données dans un tableau
     function displayTableData(data) {
         const tableBody = document.querySelector('.data-table tbody');
+        if (!tableBody) {
+            console.error("Table body not found");
+            return;
+        }
+
+        tableBody.innerHTML = ""; // Vider le tableau avant d'ajouter de nouvelles données
+
         data.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -36,7 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fonction pour afficher les données dans un graphique
     function displayChartData(data) {
-        const ctx = document.getElementById('chart-1').getContext('2d');
+        const canvas = document.getElementById('chart-1');
+        if (!canvas) {
+            console.error("Chart canvas not found");
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
         const chartData = {
             labels: data.map(item => item.date),
             datasets: [
@@ -75,11 +96,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Charger les données et les afficher
     async function loadData() {
         try {
-            const covidData = await fetchData('http://localhost:8000/api/v1/covid-data');
-            const countryData = await fetchData('http://localhost:8000/api/v1/country-data');
+            const covidData = await fetchData('http://127.0.0.1:8000/api/v1/covid-data');
+            const countryData = await fetchData('http://127.0.0.1:8000/api/v1/country-data');
 
-            displayTableData(countryData);
-            displayChartData(covidData);
+            if (countryData) {
+                displayTableData(countryData);
+            } else {
+                console.error("Les données du tableau sont vides.");
+            }
+
+            if (covidData) {
+                displayChartData(covidData);
+            } else {
+                console.error("Les données du graphique sont vides.");
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -95,11 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Après avoir injecté le HTML, charger les composants individuels
             const chartResp = await fetch('components/chart.html');
             const chartHtml = await chartResp.text();
-            document.querySelector('.charts').innerHTML = chartHtml;
+            const chartsContainer = document.querySelector('.charts');
+            if (chartsContainer) chartsContainer.innerHTML = chartHtml;
 
             const tableResp = await fetch('components/table.html');
             const tableHtml = await tableResp.text();
-            document.querySelector('.data-table').innerHTML = tableHtml;
+            const tableContainer = document.querySelector('.data-table');
+            if (tableContainer) tableContainer.innerHTML = tableHtml;
 
             // Charger les données après le chargement des composants
             loadData();
