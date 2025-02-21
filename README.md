@@ -89,6 +89,9 @@ pip install -r requirements.txt
 Pour démarrer l'application FastAPI, on utilise Uvicorn.\
 Exécutez la commande suivante dans le répertoire où se trouve main.py :
 ```bash
+pip install uvicorn
+```
+```bash
 uvicorn app.main:app --reload
 ```
 
