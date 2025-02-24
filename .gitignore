@@ -1,2 +1,8 @@
-**/.vscode
-**/node_modules
+# Ignorer les fichiers de l'éditeur VS Code
+.vscode/
+
+# Ignorer les dépendances Node.js
+node_modules/
+
+# Ignorer les fichiers Python compilés
+__pycache__/
