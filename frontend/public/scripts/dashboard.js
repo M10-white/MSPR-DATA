@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Vérifie que le tableau est présent
     function checkTableLoaded() {
-        const tableBody = document.querySelector("#data-table");
+        const tableBody = document.querySelector("#data-table tbody");
         if (!tableBody) {
             console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
             setTimeout(checkTableLoaded, 500); // Réessaye après 500ms
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 allData = data; // Stocke toutes les données
-                const tableBody = document.querySelector("#data-table");
+                const tableBody = document.querySelector("#data-table tbody");
                 tableBody.innerHTML = ""; 
                 
                 if (allData.length === 0) {
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Fonction pour afficher la page demandée
     function displayPage(page) {
-        const tableBody = document.querySelector("#data-table");
+        const tableBody = document.querySelector("#data-table tbody");
         tableBody.innerHTML = ""; // Efface les lignes actuelles
 
         const start = (page - 1) * rowsPerPage;

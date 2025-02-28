@@ -6,6 +6,49 @@
     <div class="charts">
          Composants Chart seront injectés ici 
     </div> -->
+    <div class="crud-container">
+        <!-- Formulaire d'ajout -->
+        <h2>Ajouter une nouvelle donnée</h2>
+        <form id="addForm">
+            <input type="text" name="country" placeholder="Pays" required>
+            <input type="date" name="date" placeholder="Date" required>
+            <input type="number" name="cases" placeholder="Cas" required>
+            <input type="number" name="deaths" placeholder="Décès" required>
+            <input type="number" name="recovered" placeholder="Rétablis" required>
+            <input type="number" name="active" placeholder="Actifs" required>
+            <input type="number" step="any" name="latitude" placeholder="Latitude">
+            <input type="number" step="any" name="longitude" placeholder="Longitude">
+            <input type="text" name="who_region" placeholder="Région OMS">
+            <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
+            <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
+            <button type="submit">Ajouter</button>
+        </form>
+        
+        <!-- Formulaire de mise à jour -->
+        <h2>Modifier une donnée</h2>
+        <form id="updateForm">
+            <input type="text" name="country" placeholder="Pays" required>
+            <input type="date" name="date" placeholder="Date" required>
+            <input type="number" name="cases" placeholder="Cas" required>
+            <input type="number" name="deaths" placeholder="Décès" required>
+            <input type="number" name="recovered" placeholder="Rétablis" required>
+            <input type="number" name="active" placeholder="Actifs" required>
+            <input type="number" step="any" name="latitude" placeholder="Latitude">
+            <input type="number" step="any" name="longitude" placeholder="Longitude">
+            <input type="text" name="who_region" placeholder="Région OMS">
+            <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
+            <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
+            <button type="submit">Modifier</button>
+        </form>
+        
+        <!-- Formulaire de suppression -->
+        <h2>Supprimer une donnée</h2>
+        <form id="deleteForm">
+            <input type="text" name="country" placeholder="Pays" required>
+            <input type="date" name="date" placeholder="Date" required>
+            <button type="submit">Supprimer</button>
+        </form>
+        </div>
     <div class="data-table" id="table-wrapper">
         <!-- Composant Table sera injecté ici -->
     </div>
@@ -14,5 +57,13 @@
         <span id="pageInfo">Page 1</span>
         <button id="nextPage">Suivant ▶</button>
     </div>
+
+    <div id="popup" class="popup hidden">
+        <div class="popup-content">
+            <p id="popupMessage"></p>
+            <button id="popupClose">OK</button>
+        </div>
+    </div>
+        
     
 </section>

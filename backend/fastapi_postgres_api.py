@@ -113,6 +113,69 @@ def delete_data(country: str, date: str):
     conn.close()
     return {"message": "✅ Données supprimées avec succès"}
 
+# 💌 Modifier une entrée existante
+@app.put("/data/update/")
+def update_data(entry: PandemicData):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Vérifier si l'entrée existe
+    cursor.execute("SELECT * FROM pandemic_data WHERE country = %s AND date = %s", (entry.country, entry.date))
+    existing_data = cursor.fetchone()
+
+    if not existing_data:
+        raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour mise à jour")
+
+    # Construction dynamique de la requête SQL avec uniquement les champs fournis
+    update_fields = []
+    params = []
+
+    if entry.cases is not None:
+        update_fields.append("cases = %s")
+        params.append(entry.cases)
+    if entry.deaths is not None:
+        update_fields.append("deaths = %s")
+        params.append(entry.deaths)
+    if entry.recovered is not None:
+        update_fields.append("recovered = %s")
+        params.append(entry.recovered)
+    if entry.active is not None:
+        update_fields.append("active = %s")
+        params.append(entry.active)
+    if entry.latitude is not None:
+        update_fields.append("latitude = %s")
+        params.append(entry.latitude)
+    if entry.longitude is not None:
+        update_fields.append("longitude = %s")
+        params.append(entry.longitude)
+    if entry.who_region is not None:
+        update_fields.append("who_region = %s")
+        params.append(entry.who_region)
+    if entry.mortality_rate is not None:
+        update_fields.append("mortality_rate = %s")
+        params.append(entry.mortality_rate)
+    if entry.recovery_rate is not None:
+        update_fields.append("recovery_rate = %s")
+        params.append(entry.recovery_rate)
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
+
+    # Construire la requête finale
+    query = f"""
+        UPDATE pandemic_data
+        SET {', '.join(update_fields)}
+        WHERE country = %s AND date = %s
+    """
+    params.append(entry.country)
+    params.append(entry.date)
+
+    cursor.execute(query, tuple(params))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Données mises à jour avec succès"}
+
 # 💌 Test de connexion
 @app.get("/test_connection/")
 def test_connection():
