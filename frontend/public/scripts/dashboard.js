@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Variables pour la pagination
     let allData = [];         // Stocke toutes les données récupérées
     let currentPage = 1;
-    const rowsPerPage = 20;   // Nombre de lignes à afficher par page
+    const rowsPerPage = 10;   // Nombre de lignes à afficher par page
 
     // Vérifie que le tableau est présent
     function checkTableLoaded() {
