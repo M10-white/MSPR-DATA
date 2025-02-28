@@ -19,10 +19,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Pour éviter les accumulations d'écouteurs, nous utilisons directement onclick
+    // Pour éviter les accumulations d'écouteurs, on affecte directement onclick
     btnUpdate.onclick = function() {
       modal.classList.add("hidden");
-      // Par simplicité, nous utilisons prompt pour modifier le nombre de cas
       const newCases = prompt("Modifier le nombre de cas :", rowData.cases);
       if (newCases !== null) {
         rowData.cases = parseInt(newCases);
@@ -73,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // === Pagination et affichage du tableau ===
   let allData = [];
   let currentPage = 1;
-  const rowsPerPage = 20;
+  const rowsPerPage = 10;
 
   function checkTableLoaded() {
     const tableBody = document.querySelector("#data-table tbody");
@@ -133,27 +132,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     const totalPages = Math.ceil(allData.length / rowsPerPage);
     document.querySelector("#pageInfo").textContent = `Page ${currentPage} / ${totalPages}`;
-    document.querySelector("#prevPage").disabled = currentPage === 1;
-    document.querySelector("#nextPage").disabled = currentPage === totalPages;
   }
 
-  document.querySelector("#prevPage").addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      displayPage(currentPage);
+  // Fonction qui attend que les éléments de pagination soient chargés, puis attache les écouteurs
+  function waitForPaginationElements() {
+    const prevBtn = document.querySelector("#prevPage");
+    const nextBtn = document.querySelector("#nextPage");
+    if (!prevBtn || !nextBtn) {
+      setTimeout(waitForPaginationElements, 500);
+      return;
     }
-  });
-
-  document.querySelector("#nextPage").addEventListener("click", () => {
-    if (currentPage < Math.ceil(allData.length / rowsPerPage)) {
-      currentPage++;
-      displayPage(currentPage);
-    }
-  });
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        displayPage(currentPage);
+      }
+    });
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < Math.ceil(allData.length / rowsPerPage)) {
+        currentPage++;
+        displayPage(currentPage);
+      }
+    });
+  }
 
   checkTableLoaded();
+  waitForPaginationElements();
 
-  // === Gestion du formulaire d'ajout (reste inchangé) ===
+  // === Gestion du formulaire d'ajout (inchangé) ===
   document.getElementById("addForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const formData = new FormData(this);
@@ -166,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (data.longitude) data.longitude = parseFloat(data.longitude);
     if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
     if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
-  
+
     fetch("http://127.0.0.1:8000/data/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

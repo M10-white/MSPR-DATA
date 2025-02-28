@@ -51,5 +51,26 @@
         </div>
     </div>
   
+    <!-- Modal pour modifier une donnée -->
+    <div id="rowOptionsModal" class="popup hidden">
+        <div class="popup-content">
+        <h3>Modifier la donnée</h3>
+        <form id="updateRowForm">
+            <label>Pays: <input type="text" name="country" id="updateCountry" required></label><br>
+            <label>Date: <input type="date" name="date" id="updateDate" required></label><br>
+            <label>Cas: <input type="number" name="cases" id="updateCases" required></label><br>
+            <label>Décès: <input type="number" name="deaths" id="updateDeaths" required></label><br>
+            <label>Rétablis: <input type="number" name="recovered" id="updateRecovered" required></label><br>
+            <label>Actifs: <input type="number" name="active" id="updateActive" required></label><br>
+            <label>Latitude: <input type="number" step="any" name="latitude" id="updateLatitude"></label><br>
+            <label>Longitude: <input type="number" step="any" name="longitude" id="updateLongitude"></label><br>
+            <label>Région OMS: <input type="text" name="who_region" id="updateWhoRegion"></label><br>
+            <label>Taux de mortalité: <input type="number" step="any" name="mortality_rate" id="updateMortalityRate"></label><br>
+            <label>Taux de guérison: <input type="number" step="any" name="recovery_rate" id="updateRecoveryRate"></label><br>
+            <button type="submit">Enregistrer</button>
+            <button type="button" id="cancelUpdate">Annuler</button>
+        </form>
+        </div>
+    </div>
     
 </section>

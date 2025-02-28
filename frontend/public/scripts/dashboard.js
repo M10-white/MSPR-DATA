@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
         waitForPaginationElements(); // Attendre que les éléments de pagination soient chargés
     }
 
-    // Fonction loadTableData() d'origine (inchangée, limite aux 20 premières lignes)
+    // Fonction loadTableData() d'origine (inchangée, limite aux 10 premières lignes)
     function loadTableData() {
         fetch("http://127.0.0.1:8000/data/")  
             .then(response => response.json())
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
                 
-                // Affiche la première page (20 premières lignes)
+                // Affiche la première page (10 premières lignes)
                 displayPage(1);
             })
             .catch(error => console.error("🚨 Erreur lors du chargement des données :", error));

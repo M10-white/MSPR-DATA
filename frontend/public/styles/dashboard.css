@@ -157,6 +157,14 @@
     transform: scale(1.05);
   }
   
+  tr {
+    border-bottom: 1px solid #ddd;
+  }
+
+  tr:hover {
+    background-color: var(--surface-3);
+  }
+  
   /* Cache le modal lorsque la classe 'hidden' est appliquée */
   .hidden {
     display: none;
