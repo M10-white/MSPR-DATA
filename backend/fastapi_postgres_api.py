@@ -1,10 +1,19 @@
-from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi import FastAPI, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 import pandas as pd
 from typing import Optional
 from pydantic import BaseModel
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 💌 Connexion à la base de données PostgreSQL
 DATABASE_URL = "dbname=pandemics user=postgres password=admin host=localhost port=5432"

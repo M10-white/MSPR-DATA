@@ -1,18 +1,7 @@
-function addAnimations() {
-    const elementsToAnimate = document.querySelectorAll('#header, #footer, #dashboard, .filter-bar, .chart, .data-table');
-
-    elementsToAnimate.forEach((element, index) => {
-        element.classList.add('fade-in');
-        element.style.animationDelay = `${index * 0.2}s`;
-    });
-}
-
-// Ajout d'un appel à cette fonction après le chargement des composants
 document.addEventListener('DOMContentLoaded', async () => {
     const components = [
         { id: 'header', file: '../components/header.html' },
         { id: 'dashboard', file: '../components/dashboard.html' }
-        // { id: 'footer', file: '../components/footer.html' }
     ];
 
     for (const { id, file } of components) {
@@ -31,9 +20,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const { id, file } of dashboardComponents) {
         const response = await fetch(file);
         const html = await response.text();
-        document.querySelector(`.${id}`).innerHTML = html;
+        const container = document.querySelector(`.${id}`);
+
+        if (container) {
+            container.innerHTML = html;
+        } else {
+            console.error(`🚨 Impossible de trouver l'élément .${id} dans le DOM`);
+        }
     }
 
-    // Faut ajouter d'autres animations ici
+    console.log("✅ Tous les composants sont chargés, lancement de dashboard.js...");
+    const script = document.createElement("script");
+    script.src = "scripts/dashboard.js";
+    script.defer = true;
+    document.body.appendChild(script);
+
     addAnimations();
 });

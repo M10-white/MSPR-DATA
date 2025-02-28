@@ -1,60 +1,51 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Sélectionner les conteneurs où les composants seront injectés
-    const dashboardContainer = document.querySelector('#dashboard');
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("🚀 Script chargé, recherche du tableau...");
 
-    // Vérifiez que le conteneur existe
-    if (!dashboardContainer) {
-        console.error('Dashboard container not found');
-        return;
-    }
+    function checkTableLoaded() {
+        const tableBody = document.querySelector("#data-table");
 
-    // Fonction pour afficher les données dans un tableau
-    function displayTableData(data) {
-        const tableBody = document.querySelector('.data-table tbody');
         if (!tableBody) {
-            console.error("Table body not found");
+            console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
+            setTimeout(checkTableLoaded, 500); // Réessaye après 500ms
             return;
         }
 
-        tableBody.innerHTML = ""; // Vider le tableau avant d'ajouter de nouvelles données
-
-        data.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item.name}</td>
-                <td>${item.transmission_rate}</td>
-                <td>${item.mortality}</td>
-                <td>${item.region}</td>
-            `;
-            tableBody.appendChild(row);
-        });
+        console.log("✅ Tableau trouvé, chargement des données...");
+        loadTableData();
     }
 
-    // Charger les composants HTML et injecter les données
-    async function loadComponents() {
-        try {
-            const dashboardResp = await fetch('components/dashboard.html');
-            const dashboardHtml = await dashboardResp.text();
-            dashboardContainer.innerHTML = dashboardHtml;
+    function loadTableData() {
+        fetch("http://127.0.0.1:8000/data/")  
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector("#data-table tbody");
+                tableBody.innerHTML = ""; 
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+                    return;
+                }
 
-            // Après avoir injecté le HTML, charger les composants individuels
-            const chartResp = await fetch('components/chart.html');
-            const chartHtml = await chartResp.text();
-            const chartsContainer = document.querySelector('.charts');
-            if (chartsContainer) chartsContainer.innerHTML = chartHtml;
-
-            const tableResp = await fetch('components/table.html');
-            const tableHtml = await tableResp.text();
-            const tableContainer = document.querySelector('.data-table');
-            if (tableContainer) tableContainer.innerHTML = tableHtml;
-
-            // Charger les données après le chargement des composants
-            loadData();
-        } catch (error) {
-            console.error('Error loading components:', error);
-        }
+                data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${row.country}</td>
+                        <td>${row.date}</td>
+                        <td>${row.cases}</td>
+                        <td>${row.deaths}</td>
+                        <td>${row.recovered}</td>
+                        <td>${row.active}</td>
+                        <td>${row.latitude ?? "N/A"}</td>
+                        <td>${row.longitude ?? "N/A"}</td>
+                        <td>${row.who_region ?? "N/A"}</td>
+                        <td>${row.mortality_rate ?? "N/A"}%</td>
+                        <td>${row.recovery_rate ?? "N/A"}%</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => console.error("🚨 Erreur lors du chargement des données :", error));
     }
 
-    // Charger les composants au démarrage
-    loadComponents();
+    checkTableLoaded();
 });

@@ -289,3 +289,22 @@ html, body {
   background-color: #f8f8f8;
   text-align: center;
 }
+
+#pagination {
+  text-align: center;
+  margin: 20px 0;
+}
+
+#pagination button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+#pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
