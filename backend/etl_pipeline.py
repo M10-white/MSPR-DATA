@@ -2,7 +2,6 @@ from prefect import flow, task
 import pandas as pd
 import os
 import psycopg2
-import kaggle
 import time
 
 # 📌 Dossier de stockage
@@ -29,14 +28,6 @@ def check_postgres():
             time.sleep(5)
     print("❌ PostgreSQL inaccessible après plusieurs tentatives.")
     return False
-
-# 📌 Téléchargement des données Kaggle
-@task
-def download_data():
-    os.makedirs(DATA_FOLDER, exist_ok=True)
-    dataset_name = "imdevskp/corona-virus-report"
-    kaggle.api.dataset_download_files(dataset_name, path=DATA_FOLDER, unzip=True)
-    print(f"✅ Données téléchargées et extraites dans {DATA_FOLDER}")
 
 # 📌 Nettoyage et transformation des données
 @task
