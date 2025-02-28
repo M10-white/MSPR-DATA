@@ -24,9 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (container) {
             container.innerHTML = html;
-        } else {
-            console.error(`🚨 Impossible de trouver l'élément .${id} dans le DOM`);
-        }
+        } // else {
+        //     console.error(`🚨 Impossible de trouver l'élément .${id} dans le DOM`);
+        // }
     }
 
     console.log("✅ Tous les composants sont chargés, lancement de dashboard.js...");
@@ -34,6 +34,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     script.src = "scripts/dashboard.js";
     script.defer = true;
     document.body.appendChild(script);
-
-    addAnimations();
 });

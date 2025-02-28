@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("🚀 Script chargé, recherche du tableau...");
 
     function checkTableLoaded() {
-        const tableBody = document.querySelector("#data-table");
+        const tableBody = document.querySelector("#data-table tbody");
 
         if (!tableBody) {
             console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
@@ -26,7 +26,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                data.forEach(row => {
+                // Limiter l'affichage aux 20 premières lignes
+                const limitedData = data.slice(0, 20);
+
+                limitedData.forEach(row => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${row.country}</td>

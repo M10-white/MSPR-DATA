@@ -34,18 +34,8 @@ body {
 main {
   grid-template-columns: repeat(var(--count, 1), 1fr);
   gap: var(--space);
-  margin: auto;
   inline-size: min(var(--max, 15rem), 100%);
-
-  @media (min-width: 25rem) {
-    --count: 2;
-    --max: 30rem;
-  }
-
-  @media (min-width: 45rem) {
-    --count: 4;
-    --max: 60rem;
-  }
+  width: 100%;
 }
 
 /* Animations */
@@ -219,23 +209,6 @@ header h1:hover {
   gap: 2rem;
   padding: 1rem;
 }
-.dashboard .charts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.chart {
-  position: relative;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 0.5 / 0.2;
-  border: 1px solid var(--surface-2);
-  isolation: isolate;
-  transition: border-color 200ms var(--ease-out);
-  user-select: none;
-}
 
 .data-table {
   width: 100%;
@@ -307,4 +280,64 @@ html, body {
 #pagination button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+#table-wrapper table {
+  border-collapse: collapse;
+  white-space: nowrap;
+  width: 100%;
+}
+
+@media screen and (max-width: 600px) {
+  /* Transforme le tableau en mode bloc */
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  /* Cache l'en-tête du tableau */
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  /* Chaque ligne devient une carte */
+  tr {
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+  }
+
+  /* Les cellules s'affichent en block avec un padding à gauche pour laisser de la place au label */
+  td {
+    border: none;
+    position: relative;
+    padding-left: 45%;
+    text-align: left;
+  }
+
+  /* Pseudo-éléments pour afficher le nom des colonnes */
+  td:before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    padding-right: 10px;
+    white-space: nowrap;
+    font-weight: bold;
+    color: var(--fg);
+  }
+
+  /* Associez chaque cellule à son en-tête via nth-of-type */
+  td:nth-of-type(1):before { content: "Pays"; }
+  td:nth-of-type(2):before { content: "Date"; }
+  td:nth-of-type(3):before { content: "Cas"; }
+  td:nth-of-type(4):before { content: "Décès"; }
+  td:nth-of-type(5):before { content: "Rétablis"; }
+  td:nth-of-type(6):before { content: "Actifs"; }
+  td:nth-of-type(7):before { content: "Latitude"; }
+  td:nth-of-type(8):before { content: "Longitude"; }
+  td:nth-of-type(9):before { content: "Région OMS"; }
+  td:nth-of-type(10):before { content: "Taux de mortalité"; }
+  td:nth-of-type(11):before { content: "Taux de guérison"; }
 }
