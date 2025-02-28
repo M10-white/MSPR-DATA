@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import psycopg2
 import kaggle
-import zipfile
 import time
 
 # 📌 Dossier de stockage
