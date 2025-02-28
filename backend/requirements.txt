@@ -1,6 +1,0 @@
-fastapi==0.68.0
-uvicorn==0.15.0
-sqlalchemy==1.4.22
-pydantic==1.8.2
-fastapi-cors==0.1.0
-requests==2.25.1
