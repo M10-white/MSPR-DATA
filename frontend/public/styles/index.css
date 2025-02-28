@@ -51,6 +51,11 @@
     flex-direction: column;
   }
 
+  .card-container:hover h3 {
+    transform: scale(1.05);
+    color: var(--highlight);
+  }
+
   h3 {
     text-align: center;
     margin-top: 10px;
@@ -65,11 +70,6 @@
     display: inline-block;
     padding-bottom: 5px;
     transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
-  }
-
-  h3:hover {
-    transform: scale(1.05);
-    color: var(--highlight);
   }
   
   .card {
