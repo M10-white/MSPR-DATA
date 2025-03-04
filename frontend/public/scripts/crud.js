@@ -19,27 +19,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Pour éviter les accumulations d'écouteurs, on affecte directement onclick
     btnUpdate.onclick = function() {
       modal.classList.add("hidden");
-      const newCases = prompt("Modifier le nombre de cas :", rowData.cases);
-      if (newCases !== null) {
-        rowData.cases = parseInt(newCases);
-        fetch("http://127.0.0.1:8000/data/update/", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(rowData)
-        })
-        .then(res => res.json())
-        .then(result => {
-          alert("Donnée modifiée avec succès !");
-          location.reload();
-        })
-        .catch(err => {
-          console.error("Erreur lors de la modification :", err);
-          alert("Erreur lors de la modification !");
-        });
-      }
+      openUpdateModal(rowData);
     };
 
     btnDelete.onclick = function() {
@@ -69,6 +51,72 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
+  // === Fonction pour ouvrir le modal de modification avec le formulaire pré-rempli ===
+  function openUpdateModal(rowData) {
+    const updateModal = document.getElementById("updateModal");
+    if (!updateModal) {
+      console.error("Modal updateModal introuvable !");
+      return;
+    }
+    // Récupérer le formulaire du modal
+    const updateFormModal = document.getElementById("updateFormModal");
+    // Pré-remplir les champs
+    updateFormModal.elements["country"].value = rowData.country;
+    updateFormModal.elements["date"].value = rowData.date;
+    updateFormModal.elements["cases"].value = rowData.cases;
+    updateFormModal.elements["deaths"].value = rowData.deaths;
+    updateFormModal.elements["recovered"].value = rowData.recovered;
+    updateFormModal.elements["active"].value = rowData.active;
+    updateFormModal.elements["latitude"].value = rowData.latitude || "";
+    updateFormModal.elements["longitude"].value = rowData.longitude || "";
+    updateFormModal.elements["who_region"].value = rowData.who_region || "";
+    updateFormModal.elements["mortality_rate"].value = rowData.mortality_rate || "";
+    updateFormModal.elements["recovery_rate"].value = rowData.recovery_rate || "";
+
+    updateModal.classList.remove("hidden");
+
+    // Gérer la soumission du formulaire dans le modal de mise à jour
+    updateFormModal.onsubmit = function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const updatedData = Object.fromEntries(formData.entries());
+      // Convertir les valeurs numériques
+      updatedData.cases = parseInt(updatedData.cases);
+      updatedData.deaths = parseInt(updatedData.deaths);
+      updatedData.recovered = parseInt(updatedData.recovered);
+      updatedData.active = parseInt(updatedData.active);
+      if (updatedData.latitude) updatedData.latitude = parseFloat(updatedData.latitude);
+      if (updatedData.longitude) updatedData.longitude = parseFloat(updatedData.longitude);
+      if (updatedData.mortality_rate) updatedData.mortality_rate = parseFloat(updatedData.mortality_rate);
+      if (updatedData.recovery_rate) updatedData.recovery_rate = parseFloat(updatedData.recovery_rate);
+
+      fetch("http://127.0.0.1:8000/data/update/", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData)
+      })
+      .then(res => res.json())
+      .then(result => {
+        alert("Donnée modifiée avec succès !");
+        location.reload();
+      })
+      .catch(err => {
+        console.error("Erreur lors de la modification :", err);
+        alert("Erreur lors de la modification !");
+      });
+    };
+
+  // Bouton Annuler
+  const cancelBtn = document.getElementById("cancelUpdate");
+  if (cancelBtn) {
+    cancelBtn.onclick = function() {
+      updateModal.classList.add("hidden");
+    };
+  } else {
+    console.error("Le bouton 'cancelUpdate' est introuvable !");
+  }
+}
+
   // === Pagination et affichage du tableau ===
   let allData = [];
   let currentPage = 1;
@@ -77,7 +125,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function checkTableLoaded() {
     const tableBody = document.querySelector("#data-table tbody");
     if (!tableBody) {
-      console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
       setTimeout(checkTableLoaded, 500);
       return;
     }
@@ -123,7 +170,6 @@ document.addEventListener("DOMContentLoaded", function () {
         <td>${row.mortality_rate ?? "N/A"}%</td>
         <td>${row.recovery_rate ?? "N/A"}%</td>
       `;
-      // Rendre la ligne cliquable pour ouvrir le modal d'options
       tr.style.cursor = "pointer";
       tr.addEventListener("click", function() {
         openRowOptions(row);
@@ -134,7 +180,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector("#pageInfo").textContent = `Page ${currentPage} / ${totalPages}`;
   }
 
-  // Fonction qui attend que les éléments de pagination soient chargés, puis attache les écouteurs
   function waitForPaginationElements() {
     const prevBtn = document.querySelector("#prevPage");
     const nextBtn = document.querySelector("#nextPage");
@@ -172,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (data.longitude) data.longitude = parseFloat(data.longitude);
     if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
     if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
-
+  
     fetch("http://127.0.0.1:8000/data/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
