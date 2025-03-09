@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Variables pour la pagination
     let allData = [];         // Stocke toutes les données récupérées
     let currentPage = 1;
+    let filteredData = [];
     const rowsPerPage = 10;   // Nombre de lignes à afficher par page
 
     // Vérifie que le tableau est présent
@@ -110,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+    
+    loadTableData();
     checkTableLoaded();
 });
