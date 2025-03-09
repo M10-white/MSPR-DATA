@@ -1,145 +1,115 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Sélectionner les conteneurs où les composants seront injectés
-    const dashboardContainer = document.querySelector('#dashboard');
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("🚀 Script chargé, recherche du tableau...");
 
-    // Vérifiez que le conteneur existe
-    if (!dashboardContainer) {
-        console.error('Dashboard container not found');
-        return;
-    }
+    // Variables pour la pagination
+    let allData = [];         // Stocke toutes les données récupérées
+    let currentPage = 1;
+    const rowsPerPage = 10;   // Nombre de lignes à afficher par page
 
-    // Fonction pour faire une requête API
-    async function fetchData(url) {
-        try {
-            console.log(`Fetching data from ${url}`);
-            const response = await fetch(url, {
-                mode: 'cors' // S'assurer que CORS est bien activé
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            console.log(`Données reçues de ${url}:`, data);
-            return data;
-        } catch (error) {
-            console.error(`Erreur lors de la récupération des données depuis ${url}:`, error);
-            return null;
-        }
-    }
-
-    // Fonction pour afficher les données dans un tableau
-    function displayTableData(data) {
-        const tableBody = document.querySelector('.data-table tbody');
+    // Vérifie que le tableau est présent
+    function checkTableLoaded() {
+        const tableBody = document.querySelector("#data-table tbody");
         if (!tableBody) {
-            console.error("Table body not found");
+            console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
+            setTimeout(checkTableLoaded, 500); // Réessaye après 500ms
+            return;
+        }
+        console.log("✅ Tableau trouvé, chargement des données...");
+        loadTableData();
+        waitForPaginationElements(); // Attendre que les éléments de pagination soient chargés
+    }
+
+    // Fonction loadTableData() d'origine (inchangée, limite aux 10 premières lignes)
+    function loadTableData() {
+        fetch("http://127.0.0.1:8000/data/")  
+            .then(response => response.json())
+            .then(data => {
+                allData = data; // Stocke toutes les données
+                const tableBody = document.querySelector("#data-table tbody");
+                tableBody.innerHTML = ""; 
+                
+                if (allData.length === 0) {
+                    tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+                    return;
+                }
+                
+                // Affiche la première page (10 premières lignes)
+                displayPage(1);
+            })
+            .catch(error => console.error("🚨 Erreur lors du chargement des données :", error));
+    }
+
+    // Fonction pour afficher la page demandée
+    function displayPage(page) {
+        const tableBody = document.querySelector("#data-table tbody");
+        tableBody.innerHTML = ""; // Efface les lignes actuelles
+
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = allData.slice(start, end);
+
+        if (pageData.length === 0) {
+            tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
             return;
         }
 
-        tableBody.innerHTML = ""; // Vider le tableau avant d'ajouter de nouvelles données
-
-        data.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item.name}</td>
-                <td>${item.transmission_rate}</td>
-                <td>${item.mortality}</td>
-                <td>${item.region}</td>
+        pageData.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${row.country}</td>
+                <td>${row.date}</td>
+                <td>${row.cases}</td>
+                <td>${row.deaths}</td>
+                <td>${row.recovered}</td>
+                <td>${row.active}</td>
+                <td>${row.latitude ?? "N/A"}</td>
+                <td>${row.longitude ?? "N/A"}</td>
+                <td>${row.who_region ?? "N/A"}</td>
+                <td>${row.mortality_rate ?? "N/A"}%</td>
+                <td>${row.recovery_rate ?? "N/A"}%</td>
             `;
-            tableBody.appendChild(row);
+            tableBody.appendChild(tr);
         });
+
+        // Mettre à jour l'affichage de la pagination
+        const totalPages = Math.ceil(allData.length / rowsPerPage);
+        const pageInfo = document.querySelector("#pageInfo");
+        if (pageInfo) {
+            pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+        }
+        const prevBtn = document.querySelector("#prevPage");
+        const nextBtn = document.querySelector("#nextPage");
+        if (prevBtn) prevBtn.disabled = currentPage === 1;
+        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
     }
 
-    // Fonction pour afficher les données dans un graphique
-    function displayChartData(data) {
-        const canvas = document.getElementById('chart-1');
-        if (!canvas) {
-            console.error("Chart canvas not found");
+    // Fonction pour attacher les écouteurs aux boutons de pagination une fois qu'ils sont présents
+    function waitForPaginationElements() {
+        const prevBtn = document.querySelector("#prevPage");
+        const nextBtn = document.querySelector("#nextPage");
+        const pageInfo = document.querySelector("#pageInfo");
+
+        if (!prevBtn || !nextBtn || !pageInfo) {
+            // Si l'un des éléments n'est pas trouvé, réessayer après 500ms
+            setTimeout(waitForPaginationElements, 500);
             return;
         }
 
-        const ctx = canvas.getContext('2d');
-        const chartData = {
-            labels: data.map(item => item.date),
-            datasets: [
-                {
-                    label: 'Cas confirmés',
-                    data: data.map(item => item.confirmed),
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                },
-                {
-                    label: 'Morts',
-                    data: data.map(item => item.deaths),
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                }
-            ],
-        };
+        // Ajouter les écouteurs d'événements si ce n'est pas déjà fait
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPage(currentPage);
+            }
+        });
 
-        new Chart(ctx, {
-            type: 'line',
-            data: chartData,
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'day'
-                        }
-                    }
-                }
+        nextBtn.addEventListener("click", () => {
+            if (currentPage < Math.ceil(allData.length / rowsPerPage)) {
+                currentPage++;
+                displayPage(currentPage);
             }
         });
     }
 
-    // Charger les données et les afficher
-    async function loadData() {
-        try {
-            const covidData = await fetchData('http://127.0.0.1:8000/api/v1/covid-data');
-            const countryData = await fetchData('http://127.0.0.1:8000/api/v1/country-data');
-
-            if (countryData) {
-                displayTableData(countryData);
-            } else {
-                console.error("Les données du tableau sont vides.");
-            }
-
-            if (covidData) {
-                displayChartData(covidData);
-            } else {
-                console.error("Les données du graphique sont vides.");
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-
-    // Charger les composants HTML et injecter les données
-    async function loadComponents() {
-        try {
-            const dashboardResp = await fetch('components/dashboard.html');
-            const dashboardHtml = await dashboardResp.text();
-            dashboardContainer.innerHTML = dashboardHtml;
-
-            // Après avoir injecté le HTML, charger les composants individuels
-            const chartResp = await fetch('components/chart.html');
-            const chartHtml = await chartResp.text();
-            const chartsContainer = document.querySelector('.charts');
-            if (chartsContainer) chartsContainer.innerHTML = chartHtml;
-
-            const tableResp = await fetch('components/table.html');
-            const tableHtml = await tableResp.text();
-            const tableContainer = document.querySelector('.data-table');
-            if (tableContainer) tableContainer.innerHTML = tableHtml;
-
-            // Charger les données après le chargement des composants
-            loadData();
-        } catch (error) {
-            console.error('Error loading components:', error);
-        }
-    }
-
-    // Charger les composants au démarrage
-    loadComponents();
+    checkTableLoaded();
 });
