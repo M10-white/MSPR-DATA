@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <section id="dashboard" class="dashboard">
-    <!-- <div class="filter-bar">
-         FilterBar sera injecté ici 
+    <div class="filter-bar">
+        <!-- FilterBar sera injecté ici -->
     </div>
-    <div class="charts">
-         Composants Chart seront injectés ici 
-    </div> -->
     <div class="crud-container">
         <!-- Formulaire d'ajout -->
         <h2>Ajouter une nouvelle donnée</h2>
@@ -54,28 +51,24 @@
     <!-- Modal pour la modification -->
     <div id="updateModal" class="popup hidden">
         <div class="popup-content">
-        <h3>Modifier la donnée</h3>
-        <form id="updateFormModal">
-            <input type="text" name="country" placeholder="Pays" readonly>
-            <input type="date" name="date" placeholder="Date" readonly>
-            <input type="number" name="cases" placeholder="Cas" required>
-            <input type="number" name="deaths" placeholder="Décès" required>
-            <input type="number" name="recovered" placeholder="Rétablis" required>
-            <input type="number" name="active" placeholder="Actifs" required>
-            <input type="number" step="any" name="latitude" placeholder="Latitude">
-            <input type="number" step="any" name="longitude" placeholder="Longitude">
-            <input type="text" name="who_region" placeholder="Région OMS">
-            <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
-            <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
-            <br>
-            <button type="submit">Enregistrer</button>
-            <button type="button" id="cancelUpdate">Annuler</button>
-        </form>
+            <h3>Modifier la donnée</h3>
+            <form id="updateFormModal">
+                <input type="text" name="country" placeholder="Pays" readonly>
+                <input type="date" name="date" placeholder="Date" readonly>
+                <input type="number" name="cases" placeholder="Cas" required>
+                <input type="number" name="deaths" placeholder="Décès" required>
+                <input type="number" name="recovered" placeholder="Rétablis" required>
+                <input type="number" name="active" placeholder="Actifs" required>
+                <input type="number" step="any" name="latitude" placeholder="Latitude">
+                <input type="number" step="any" name="longitude" placeholder="Longitude">
+                <input type="text" name="who_region" placeholder="Région OMS">
+                <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
+                <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
+                <br>
+                <button type="submit">Enregistrer</button>
+                <button type="button" id="cancelUpdate">Annuler</button>
+            </form>
         </div>
     </div>
-  
-  
-    </div>
-  
-    
+
 </section>
