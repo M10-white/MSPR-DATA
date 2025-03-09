@@ -222,6 +222,50 @@ header h1:hover {
   background-color: var(--surface-1);
 }
 
+/* Styles généraux pour les inputs, select et textarea dans les formulaires */
+form input[type="text"],
+form input[type="date"],
+form input[type="number"],
+form select,
+form textarea {
+  font-size: 1rem;                /* Taille de police standard */
+  padding: 0.4rem 0.6rem;         /* Un padding léger */
+  border: 1px solid var(--border-color); /* Utilise la variable pour la couleur de bordure */
+  border-radius: 4px;             /* Coins légèrement arrondis */
+  background-color: var(--surface-1); /* Fond sobre */
+  color: var(--fg);              /* Couleur du texte */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  margin: 0.3rem 0;              /* Espacement vertical */
+}
+
+/* Styles lors du focus sur les inputs */
+form input[type="text"]:focus,
+form input[type="date"]:focus,
+form input[type="number"]:focus,
+form select:focus,
+form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);  /* Met en valeur la bordure au focus */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour les boutons de formulaire */
+form button {
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+form button:hover {
+  background-color: var(--secondary-color);
+}
+
 .filter-bar {
   display: flex;
   gap: 1rem;
