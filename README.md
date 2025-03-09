@@ -27,7 +27,7 @@ Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'a
 ### Frontend
   HTML5\
   CSS/SCSS\
-  JavaScript (avec librairies comme D3.js ou Chart.js pour les visualisations)
+  JavaScript
 
 ### Outils de Documentation
   Draw.io (modélisation des données)\
