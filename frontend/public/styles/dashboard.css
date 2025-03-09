@@ -38,6 +38,31 @@
     width: 100%;
 }
 
+tbody tr {
+    cursor: pointer;
+}
+
+tbody tr:hover {
+    background-color: var(--surface-3);
+}
+
+th, td {
+    padding: 10px;
+}
+
+th {
+    text-align: left;
+}
+
+tbody td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+thead th:not(:last-child) {
+    border-right: 1px solid #ddd;
+}
+
 .timeline {
     text-align: center;
     padding: 50px 20px;
@@ -157,12 +182,13 @@
     transform: scale(1.05);
   }
   
-  tr {
-    border-bottom: 1px solid #ddd;
+  .popup-content button:focus {
+    outline: none;
   }
-
-  tr:hover {
+  
+  .popup-content button:disabled {
     background-color: var(--surface-3);
+    cursor: not-allowed;
   }
   
   /* Cache le modal lorsque la classe 'hidden' est appliquée */
