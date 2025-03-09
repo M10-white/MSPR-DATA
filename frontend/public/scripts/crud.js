@@ -167,8 +167,8 @@ document.addEventListener("DOMContentLoaded", function () {
         <td>${row.latitude ?? "N/A"}</td>
         <td>${row.longitude ?? "N/A"}</td>
         <td>${row.who_region ?? "N/A"}</td>
-        <td>${row.mortality_rate ?? "N/A"}%</td>
-        <td>${row.recovery_rate ?? "N/A"}%</td>
+        <td>${typeof row.mortality_rate === "number" ? row.mortality_rate.toFixed(3) : "N/A"}%</td>
+        <td>${typeof row.recovery_rate === "number" ? row.recovery_rate.toFixed(3) : "N/A"}%</td>
       `;
       tr.style.cursor = "pointer";
       tr.addEventListener("click", function() {
