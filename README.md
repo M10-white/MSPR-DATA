@@ -123,5 +123,5 @@ Multi-languages
 ### Contributors
 Anas Kotoub : Backend\
 Iliana Benchikh : Backend\
-Brahim Chaouki : Frontend & Backend\
+Brahim Chaouki : Fullstack\
 Akram Mahboubi : Frontend
