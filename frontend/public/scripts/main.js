@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const components = [
-        { id: 'header', file: '../components/header.html' },
-        { id: 'dashboard', file: '../components/dashboard.html' }
+        { id: 'header', file: 'components/header.html' },
+        { id: 'dashboard', file: 'components/dashboard.html' }
     ];
+    
 
     for (const { id, file } of components) {
         const response = await fetch(file);
@@ -12,10 +13,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Charge les sous-composants du Dashboard
     const dashboardComponents = [
-        { id: 'filter-bar', file: '../components/filter-bar.html' },
-        { id: 'charts', file: '../components/chart.html' },
-        { id: 'data-table', file: '../components/table.html' }
+        { id: 'filter-bar', file: 'components/filter-bar.html' },
+        { id: 'charts', file: 'components/chart.html' },
+        { id: 'data-table', file: 'components/table.html' }
     ];
+    
 
     for (const { id, file } of dashboardComponents) {
         const response = await fetch(file);
