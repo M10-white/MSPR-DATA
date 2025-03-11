@@ -14,7 +14,7 @@ echo "🔍 Vérification et création des tables dans PostgreSQL..."
 python backend/etl_pipeline.py
 
 echo "🚀 Démarrage de l'API FastAPI..."
-uvicorn backend.fastapi_postgres_api:app --reload &
+uvicorn backend.fastapi_postgres_api:app --host 127.0.0.1 --port 5000 --reload &
 
 API_PID=$!
 
@@ -25,7 +25,7 @@ http-server -p 8000 &
 FRONTEND_PID=$!
 
 echo "✅ Tout est en cours d'exécution ! 🎉"
-echo "ℹ️ API disponible sur http://127.0.0.1:8000"
+echo "ℹ️ API disponible sur http://127.0.0.1:5000"
 echo "ℹ️ Frontend disponible sur http://127.0.0.1:8000"
 
 # Attendre la fin des processus

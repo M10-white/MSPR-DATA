@@ -137,14 +137,7 @@ chmod +x start.sh  # Autoriser l'exécution du script
 ./start.sh  # Exécuter le script
 ```
 
-6. **Tester si tout fonctionne** :
-#### 🌐 **Vérifier l'API**
-- Accédez à l'interface Swagger :  
-  👉 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- Vérifiez l’état de la connexion à PostgreSQL :
-  👉 [http://127.0.0.1:8000/test_connection/](http://127.0.0.1:8000/test_connection/)
-
-#### 🖥️ **Accéder au site**
+6. #### 🖥️ **Accéder au site**
 Ouvrez **[http://127.0.0.1:8000](http://127.0.0.1:8000)** dans votre navigateur.
 
 ---
