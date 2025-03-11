@@ -84,29 +84,42 @@ def delete_user(user_id: int):
 
 # 💌 CRUD pour PandemicData
 @app.get("/data/")
-def get_data(user_id: int, country: Optional[str] = Query(None), start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+def get_data(user_id: Optional[int] = Query(None), country: Optional[str] = Query(None), start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     conn = get_db_connection()
     cursor = conn.cursor()
+
     query = """
         SELECT user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate 
-        FROM pandemic_data WHERE user_id = %s
+        FROM pandemic_data WHERE 1=1
     """
-    params = [user_id]
+    params = []
+
+    if user_id:
+        query += " AND user_id = %s"
+        params.append(user_id)
+
     if country:
         query += " AND country = %s"
         params.append(country)
+
     if start_date:
         query += " AND date >= %s"
         params.append(start_date)
+
     if end_date:
         query += " AND date <= %s"
         params.append(end_date)
+
     cursor.execute(query, tuple(params))
     data = cursor.fetchall()
+
+    columns = ["user_id", "country", "date", "cases", "deaths", "recovered", "active", "latitude", "longitude", "who_region", "mortality_rate", "recovery_rate"]
+    df = pd.DataFrame(data, columns=columns)
+
     cursor.close()
     conn.close()
-    columns = ["user_id", "country", "date", "cases", "deaths", "recovered", "active", "latitude", "longitude", "who_region", "mortality_rate", "recovery_rate"]
-    return pd.DataFrame(data, columns=columns).to_dict(orient="records")
+
+    return df.to_dict(orient="records")
 
 @app.post("/data/")
 def add_data(entry: PandemicData):

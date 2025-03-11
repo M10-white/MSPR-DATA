@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
         if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
       
-        fetch("http://127.0.0.1:8000/data/", {
+        fetch("http://127.0.0.1:5000/data/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
