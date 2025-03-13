@@ -301,8 +301,8 @@ form button:hover {
 
 .logout-btn {
   position: absolute;
-  right: 50%;
-  top: 0;
+  right: 47%;
+  top: 3rem;
   transform: translateY(-50%);
   background-color: #ff6b6b;
   color: #fff;

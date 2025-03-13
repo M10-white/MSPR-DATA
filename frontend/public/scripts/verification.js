@@ -1,15 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("access_token");
   const logoutBtn = document.getElementById("logoutBtn");
-
   if (token && logoutBtn) {
-    // Affiche le bouton de déconnexion
     logoutBtn.style.display = "block";
+  } else if (logoutBtn) {
+    logoutBtn.style.display = "none";
   }
-
+  
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      // Supprimer le token et rediriger vers la page de connexion
+      console.log("Bouton de déconnexion cliqué");
       localStorage.removeItem("access_token");
       window.location.href = "index.html";
     });
