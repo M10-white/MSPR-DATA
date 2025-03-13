@@ -110,7 +110,7 @@ h2 {
     content: "";
     position: absolute;
     inset: 0; /* top:0; left:0; right:0; bottom:0; */
-    background: rgba(0, 0, 0, 0.3); /* assombrit un peu l’image */
+    background: rgba(0, 0, 0, 0.63); /* assombrit un peu l’image */
     z-index: 1;
   }
   
