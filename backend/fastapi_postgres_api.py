@@ -46,6 +46,26 @@ class User(BaseModel):
     password: str
 
 # 💌 CRUD pour Users
+@app.get("/users/")
+def get_all_users():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email, password, created_at FROM users")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    users = []
+    for r in rows:
+        users.append({
+            "id": r[0],
+            "username": r[1],
+            "email": r[2],
+            "password": r[3],
+            "created_at": r[4]
+        })
+    return users
+
 @app.post("/users/")
 def create_user(user: User):
     conn = get_db_connection()
