@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Fonction loadTableData() d'origine (inchangée, limite aux 10 premières lignes)
     function loadTableData() {
-        fetch("http://127.0.0.1:8000/data/")  
+        fetch("http://127.0.0.1:5000/data/")  
             .then(response => response.json())
             .then(data => {
                 allData = data;         // Stocke toutes les données
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
         if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
       
-        fetch("http://127.0.0.1:8000/data/", {
+        fetch("http://127.0.0.1:5000/data/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
