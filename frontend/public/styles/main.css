@@ -284,14 +284,6 @@ form button:hover {
   background-color: var(--surface-1);
 }
 
-/* Footer spécifique */
-html, body {
-  height: 100%;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -307,19 +299,10 @@ html, body {
   text-align: center;
 }
 
-.header-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  padding: 1rem;
-  background-color: var(--bg);
-}
-
 .logout-btn {
   position: absolute;
-  right: 20px;
-  top: 50%;
+  right: 50%;
+  top: 0;
   transform: translateY(-50%);
   background-color: #ff6b6b;
   color: #fff;
