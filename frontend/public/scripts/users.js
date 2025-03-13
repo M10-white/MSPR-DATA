@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Charge les sous-composants du Dashboard
     const dashboardComponentsUsers = [
-       // { id: 'filter-bar', file: 'components/filter-barUsers.html' },
+        { id: 'filter-bar', file: 'components/filter-barUsers.html' },
         { id: 'users-table', file: 'components/table-users.html' },
     ];
     

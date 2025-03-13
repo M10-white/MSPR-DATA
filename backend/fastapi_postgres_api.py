@@ -3,7 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 import pandas as pd
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 app = FastAPI()
 
@@ -154,6 +157,37 @@ def test_connection():
         return {"status": "✅ Connexion réussie à PostgreSQL"}
     except Exception as e:
         return {"status": "❌ Échec de connexion", "error": str(e)}
+
+@app.post("/login")
+def login(user: UserLogin):
+    """
+    Vérifie si l'email et le mot de passe correspondent à un user en base.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Récupérer l'utilisateur via son email
+    cursor.execute("SELECT id, username, email, password FROM users WHERE email = %s", (user.email,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not row:
+        # Aucun user avec cet email
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
+    
+    user_id, username, email, db_password = row
+
+    # Vérification du mot de passe (exemple simplifié, sans hachage)
+    if user.password != db_password:
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
+
+    # Si OK, on renvoie un message de succès ou un token
+    return {
+        "message": "Connexion réussie !",
+        "user_id": user_id,
+        "username": username
+    }
 
 # 💌 Lancer l'API avec uvicorn
 # Commande : uvicorn fastapi_postgres_api:app --reload
