@@ -18,9 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const result = await response.json();
         console.log("Connexion OK :", result);
-        // Stocke user_id, etc. dans localStorage si tu veux
-        // Redirige vers index.html ou autre
-        window.location.href = "index.html";
+        localStorage.setItem("access_token", result.access_token);
+        window.location.href = "menu.html";
       } catch (error) {
         errorMessage.textContent = error.message;
       }
