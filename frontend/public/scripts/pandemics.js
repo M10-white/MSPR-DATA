@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Charge les sous-composants du Dashboard
     const dashboardComponentsPandemics = [
-        { id: 'filter-bar', file: 'components/filter-bar.html' },
+        { id: 'filter-bar', file: 'components/filter-barPandemics.html' },
         { id: 'data-table', file: 'components/table-pandemics.html' },
     ];
     

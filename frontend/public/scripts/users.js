@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Charge les sous-composants du Dashboard
     const dashboardComponentsUsers = [
-        { id: 'filter-bar', file: 'components/filter-bar.html' },
+       // { id: 'filter-bar', file: 'components/filter-barUsers.html' },
         { id: 'users-table', file: 'components/table-users.html' },
     ];
     
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     // Fonction pour récupérer et afficher les utilisateurs
     function fetchUsers() {
-      fetch('http://127.0.0.1:8000/users/')
+      fetch('http://127.0.0.1:5000/users/')
         .then(response => response.json())
         .then(data => {
           allUsers = data;
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fonction pour supprimer un utilisateur
     function deleteUser(userId) {
       if (confirm("Confirmez-vous la suppression de cet utilisateur ?")) {
-        fetch(`http://127.0.0.1:8000/users/${userId}`, {
+        fetch(`http://127.0.0.1:5000/users/${userId}`, {
           method: "DELETE"
         })
         .then(response => {
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fonction pour modifier un utilisateur via prompt (peut être remplacée par un modal)
     function editUserPrompt(userId) {
       // Récupère l'utilisateur à modifier
-      fetch(`http://127.0.0.1:8000/users/${userId}`)
+      fetch(`http://127.0.0.1:5000/users/${userId}`)
         .then(response => response.json())
         .then(user => {
           const newUsername = prompt("Nouveau nom d'utilisateur :", user.username);
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     // Fonction pour mettre à jour un utilisateur
     function updateUser(userId, updatedUser) {
-      fetch(`http://127.0.0.1:8000/users/${userId}`, {
+      fetch(`http://127.0.0.1:5000/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedUser)
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const formData = new FormData(addUserForm);
       const newUser = Object.fromEntries(formData.entries());
       // Note : En production, pensez à hasher le mot de passe côté serveur.
-      fetch("http://127.0.0.1:8000/users/", {
+      fetch("http://127.0.0.1:5000/users/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newUser)
