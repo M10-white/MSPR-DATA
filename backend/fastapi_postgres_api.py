@@ -4,6 +4,7 @@ import psycopg2
 import pandas as pd
 from typing import Optional
 from pydantic import BaseModel, EmailStr
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
