@@ -18,9 +18,18 @@ uvicorn backend.fastapi_postgres_api:app --host 127.0.0.1 --port 5000 --reload &
 
 API_PID=$!
 
+echo "🚀 Vérification de http-server..."
+if ! command -v http-server &> /dev/null
+then
+    echo "❌ http-server n'est pas installé. Installation en cours..."
+    npm install -g http-server
+fi
+
 echo "🚀 Démarrage du serveur frontend..."
 cd frontend/public
-http-server -p 8000 &
+
+# Utilisation de npx pour éviter les problèmes de chemin
+npx http-server -p 8000 &
 
 FRONTEND_PID=$!
 
