@@ -1,3 +1,4 @@
+/* Pagination */
 #pagination {
     display: flex;
     justify-content: center;
@@ -32,6 +33,7 @@
     color: var(--fg);
 }
 
+/* Table */
 #table-wrapper table {
     border-collapse: collapse;
     white-space: nowrap;
@@ -63,6 +65,7 @@ thead th:not(:last-child) {
     border-right: 1px solid #ddd;
 }
 
+/* Timeline */
 .timeline {
     text-align: center;
     padding: 50px 20px;
@@ -99,7 +102,7 @@ thead th:not(:last-child) {
     box-shadow: 0 6px 15px rgba(255, 255, 255, 0.2);
 }
 
-
+/* Technologies */
 .technologies {
     text-align: center;
     padding: 50px 20px;
@@ -133,40 +136,69 @@ thead th:not(:last-child) {
 
 .popup {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .popup-content {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
     background: #fff;
     padding: 20px;
     border-radius: 8px;
     max-width: 90%;
-    width: 300px; /* Ajustez cette largeur selon vos besoins */
+    width: 400px;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-  
-  .popup-content h3 {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+    z-index: 2000; /* Plus élevé pour éviter les superpositions */
+}
+
+/* Activation de la pop-up */
+.popup.active {
+    display: flex; /* Correction */
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Contenu de la pop-up */
+.popup-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.popup-content h3 {
     margin-bottom: 15px;
     font-size: 1.2rem;
     color: #333;
-  }
-  
-  .popup-content p {
+}
+
+.popup-content p {
     margin-bottom: 20px;
     font-size: 1rem;
     color: #333;
-  }
-  
-  .popup-content button {
+}
+
+.popup-content form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.popup-content button {
     padding: 10px 15px;
     margin: 5px;
     border: none;
@@ -175,23 +207,115 @@ thead th:not(:last-child) {
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  .popup-content button:hover {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.popup-content button:hover {
     background-color: var(--primary-color);
     transform: scale(1.05);
-  }
-  
-  .popup-content button:focus {
+}
+
+.popup-content button:focus {
     outline: none;
-  }
-  
-  .popup-content button:disabled {
-    background-color: var(--surface-3);
-    cursor: not-allowed;
-  }
-  
-  /* Cache le modal lorsque la classe 'hidden' est appliquée */
-  .hidden {
+}
+
+.popup-content button.cancel {
+    background-color: #ccc;
+    color: #333;
+}
+
+.popup-content button.cancel:hover {
+    background-color: #aaa;
+}
+
+/* Cache le modal lorsque la classe 'hidden' est appliquée */
+.hidden {
     display: none;
-  }
+}
+
+/* 🌟 Style Général des Boutons */
+.btn-modifier,
+.btn-supprimer,
+button[type="submit"],
+button.cancel {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ✏️ Bouton Modifier */
+.btn-modifier {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: 1px solid #0056b3;
+}
+
+.btn-modifier:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: scale(1.07);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* 🗑️ Bouton Supprimer */
+.btn-supprimer {
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+    color: white;
+    border: 1px solid #b02a37;
+}
+
+.btn-supprimer:hover {
+    background: linear-gradient(135deg, #b02a37, #8b1f2c);
+    transform: scale(1.07);
+    box-shadow: 0 6px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* ➕ Bouton Ajouter */
+button[type="submit"] {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+    border: 1px solid #1e7e34;
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(135deg, #1e7e34, #155d27);
+    transform: scale(1.07);
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* 💾 Bouton Enregistrer */
+button.save {
+    background: linear-gradient(135deg, #17a2b8, #117a8b);
+    color: white;
+    border: 1px solid #117a8b;
+}
+
+button.save:hover {
+    background: linear-gradient(135deg, #117a8b, #0d5c70);
+    transform: scale(1.07);
+    box-shadow: 0 6px 12px rgba(23, 162, 184, 0.3);
+}
+
+/* ❌ Bouton Annuler */
+button.cancel {
+    background: linear-gradient(135deg, #6c757d, #545b62);
+    color: white;
+    border: 1px solid #545b62;
+}
+
+button.cancel:hover {
+    background: linear-gradient(135deg, #545b62, #3d4347);
+    transform: scale(1.07);
+    box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
+}

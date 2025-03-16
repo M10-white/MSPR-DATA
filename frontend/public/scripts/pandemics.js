@@ -1,79 +1,107 @@
+console.log("🔍 Début du chargement de pandemics.js");
+
+// 🔎 Vérification du `localStorage` et des cookies avant exécution
+console.log("📦 Contenu actuel de localStorage:", JSON.stringify(localStorage, null, 2));
+console.log("🍪 Contenu des cookies:", document.cookie);
+
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("🚀 DOM chargé, initialisation des composants...");
+
     const componentsPandemics = [
         { id: 'header', file: 'components/header.html' },
         { id: 'dashboard-pandemics', file: 'components/dashboard-pandemics.html' },
     ];
-    
 
     for (const { id, file } of componentsPandemics) {
-        const response = await fetch(file);
-        const html = await response.text();
-        document.getElementById(id).innerHTML = html;
-    }
+        try {
+            const response = await fetch(file);
+            if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
 
-    // Charge les sous-composants du Dashboard
-    const dashboardComponentsPandemics = [
-        { id: 'filter-bar', file: 'components/filter-barPandemics.html' },
-        { id: 'data-table', file: 'components/table-pandemics.html' },
-    ];
-    
+            let html = await response.text();
+            
+            // ✅ Vérifier si un mauvais <link> styles.css est injecté
+            html = html.replace('<link rel="stylesheet" href="styles.css">', `
+                <link rel="stylesheet" href="styles/main.css">
+                <link rel="stylesheet" href="styles/dashboard.css">
+            `);
 
-    for (const { id, file } of dashboardComponentsPandemics) {
-        const response = await fetch(file);
-        const html = await response.text();
-        const container = document.querySelector(`.${id}`);
-
-        if (container) {
-            container.innerHTML = html;
-        } // else {
-        //     console.error(`🚨 Impossible de trouver l'élément .${id} dans le DOM`);
-        // }
-    }
-
-    console.log("✅ Tous les composants sont chargés !");
-    console.log("🚀 Recherche du tableau...");
-
-    // Variables pour la pagination
-    let allData = [];         // Stocke toutes les données récupérées
-    let filteredData = [];    // Stocke les données filtrées après application des filtres
-    let currentPage = 1;
-    const rowsPerPage = 10;   // Nombre de lignes à afficher par page
-
-    // Vérifie que le tableau est présent
-    function checkTableLoaded() {
-        const tableBody = document.querySelector("#data-table tbody");
-        if (!tableBody) {
-            console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
-            setTimeout(checkTableLoaded, 500); // Réessaye après 500ms
-            return;
+            const container = document.getElementById(id);
+            if (container) {
+                container.innerHTML = html;
+                console.log(`✅ ${file} chargé dans #${id}`);
+            } else {
+                console.error(`🚨 Impossible de trouver l'élément #${id} dans le DOM`);
+            }
+        } catch (error) {
+            console.error(`🚨 Erreur lors du chargement du fichier ${file} :`, error);
         }
-        console.log("✅ Tableau trouvé, chargement des données...");
-        loadTableData();
-        waitForPaginationElements(); // Attendre que les éléments de pagination soient chargés
     }
 
-    // Fonction loadTableData() d'origine (inchangée, limite aux 10 premières lignes)
-    function loadTableData() {
-        fetch("http://127.0.0.1:5000/data/")  
-            .then(response => response.json())
-            .then(data => {
-                allData = data;         // Stocke toutes les données
-                filteredData = data;    // Par défaut, pas de filtre
-                const tableBody = document.querySelector("#data-table tbody");
-                tableBody.innerHTML = ""; 
-                
-                if (allData.length === 0) {
-                    tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
-                    return;
-                }
-                
-                // Affiche la première page (10 premières lignes)
-                displayPage(1);
-            })
-            .catch(error => console.error("🚨 Erreur lors du chargement des données :", error));
+    async function waitForElement(selector, maxRetries = 20, delay = 500) {
+        let retries = 0;
+        while (!document.querySelector(selector) && retries < maxRetries) {
+            console.warn(`⏳ Attente de ${selector}... Tentative ${retries + 1}/${maxRetries}`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retries++;
+        }
+        return document.querySelector(selector);
     }
 
-    // Applique les filtres
+    async function getUserId() {
+        let userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
+
+        if (userId) {
+            console.log(`✅ user_id récupéré : ${userId}`);
+            return Number(userId);
+        }
+
+        console.warn("⚠️ user_id non trouvé, vérification des cookies...");
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            let [name, value] = cookie.split("=");
+            if (name.trim() === "user_id") {
+                console.log(`✅ user_id récupéré depuis Cookie: ${value}`);
+                sessionStorage.setItem("user_id", value);
+                localStorage.setItem("user_id", value);
+                return Number(value);
+            }
+        }
+
+        console.error("❌ Aucun user_id trouvé !");
+        return null;
+    }
+
+    let userId = await getUserId();
+    if (!userId) {
+        alert("⚠️ Problème de connexion : aucun user_id trouvé !");
+        return;
+    }
+    console.log(`🔹 userId final : ${userId}`);
+
+    let allData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const rowsPerPage = 10;
+
+    async function loadTableData() {
+        try {
+            console.log(`📡 Requête API : Récupération des données pour userId: ${userId}`);
+            const url = `http://127.0.0.1:5000/data/${userId}`;
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+
+            allData = await response.json();
+            filteredData = allData; // Par défaut, aucune donnée filtrée
+
+            console.log("📊 Données reçues de l'API :", allData);
+            await displayPage(currentPage);
+        } catch (error) {
+            console.error("🚨 Erreur lors du chargement des données :", error);
+        }
+    }
+
+    // Appliquer les filtres
     function applyFilters() {
         const countryFilter = document.getElementById("country").value;
         const omsFilter = document.getElementById("omsRegion").value;
@@ -81,44 +109,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         filteredData = allData.filter(row => {
             let match = true;
-            
-            // Filtre par pays
+
             if (countryFilter !== "all") {
-                // compare "china" === "china" etc.
                 match = match && row.country.toLowerCase() === countryFilter.toLowerCase();
             }
 
-            // Filtre par région OMS
             if (omsFilter !== "all") {
                 match = match && row.who_region.toLowerCase() === omsFilter.toLowerCase();
             }
 
-            // Filtre par date
             if (dateFilter) {
-                // row.date doit correspondre exactement, ex: "2020-01-23"
                 match = match && row.date === dateFilter;
             }
 
             return match;
         });
 
-        currentPage = 1;       // Réinitialise la page
+        currentPage = 1; // Réinitialise la page
         displayPage(currentPage);
     }
 
-    // Affiche la page demandée
+    // Affiche les données de la page
     function displayPage(page) {
-        const tableBody = document.querySelector("#data-table tbody");
-        tableBody.innerHTML = ""; // Efface les lignes actuelles
+        const tableBody = document.querySelector("#table-body");
+        tableBody.innerHTML = "";
 
-        // On affiche filteredData (si un filtre est actif) ou allData (si pas de filtre)
-        // Ici, on a mis filteredData = allData par défaut, donc on utilise toujours filteredData
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
         const pageData = filteredData.slice(start, end);
 
         if (pageData.length === 0) {
-            tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan='12'>Aucune donnée disponible</td></tr>";
             return;
         }
 
@@ -140,7 +161,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             tableBody.appendChild(tr);
         });
 
-        // Mettre à jour l'affichage de la pagination
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
         const pageInfo = document.querySelector("#pageInfo");
         if (pageInfo) {
@@ -148,38 +168,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const prevBtn = document.querySelector("#prevPage");
         const nextBtn = document.querySelector("#nextPage");
+
         if (prevBtn) prevBtn.disabled = currentPage === 1;
         if (nextBtn) nextBtn.disabled = currentPage === totalPages;
     }
 
-    function waitForFilterElements() {
-        const countrySelect = document.getElementById("country");
-        const omsSelect = document.getElementById("omsRegion");
-        const dateInput = document.getElementById("date");
-      
-        if (!countrySelect || !omsSelect || !dateInput) {
-          console.warn("⏳ Éléments de filtre non encore disponibles, nouvelle tentative...");
-          setTimeout(waitForFilterElements, 500);
-          return;
-        }
-      
-        // Une fois trouvés, on peut attacher les écouteurs
-        countrySelect.addEventListener("change", applyFilters);
-        omsSelect.addEventListener("change", applyFilters);
-        dateInput.addEventListener("change", applyFilters);
-      }
-      
-      // Puis, appelez cette fonction
-      waitForFilterElements();      
-
-    // Fonction pour attacher les écouteurs aux boutons de pagination une fois qu'ils sont présents
+    // Fonction d'attente des éléments de pagination
     function waitForPaginationElements() {
         const prevBtn = document.querySelector("#prevPage");
         const nextBtn = document.querySelector("#nextPage");
-        const pageInfo = document.querySelector("#pageInfo");
 
-        if (!prevBtn || !nextBtn || !pageInfo) {
-            // Si l'un des éléments n'est pas trouvé, réessayer après 500ms
+        if (!prevBtn || !nextBtn) {
             setTimeout(waitForPaginationElements, 500);
             return;
         }
@@ -199,41 +198,201 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Fonction d'attente des éléments de filtre
+    function waitForFilterElements() {
+        const countrySelect = document.getElementById("country");
+        const omsSelect = document.getElementById("omsRegion");
+        const dateInput = document.getElementById("date");
+
+        if (!countrySelect || !omsSelect || !dateInput) {
+            setTimeout(waitForFilterElements, 500);
+            return;
+        }
+
+        countrySelect.addEventListener("change", applyFilters);
+        omsSelect.addEventListener("change", applyFilters);
+        dateInput.addEventListener("change", applyFilters);
+    }
+
+    // Écouteurs pour les éléments de pagination et les filtres
+    waitForPaginationElements();
+    waitForFilterElements();
+
+    // Chargement des données de la table
     checkTableLoaded();
 
-    // Écouteurs sur les filtres
-    document.getElementById("country").addEventListener("change", applyFilters);
-    document.getElementById("omsRegion").addEventListener("change", applyFilters);
-    document.getElementById("date").addEventListener("change", applyFilters);
-
-    // === Gestion du formulaire d'ajout (inchangé) ===
-    document.getElementById("addForm").addEventListener("submit", function(e) {
+    // 📌 Requête POST : Ajouter une nouvelle entrée
+    document.getElementById("addForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-        data.cases = parseInt(data.cases);
-        data.deaths = parseInt(data.deaths);
-        data.recovered = parseInt(data.recovered);
-        data.active = parseInt(data.active);
-        if (data.latitude) data.latitude = parseFloat(data.latitude);
-        if (data.longitude) data.longitude = parseFloat(data.longitude);
-        if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
-        if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
-      
-        fetch("http://127.0.0.1:5000/data/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(result => {
-          showPopup("Donnée ajoutée avec succès !", function() {
-            location.reload();
-          });
-        })
-        .catch(err => {
-          console.error("Erreur lors de l'ajout :", err);
-          showPopup("Erreur lors de l'ajout de la donnée !");
-        });
+        const formData = new FormData(e.target);
+        const newEntry = Object.fromEntries(formData.entries());
+        newEntry.user_id = userId;
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/data/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newEntry),
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            alert("✅ Donnée ajoutée !");
+            loadTableData();
+            e.target.reset();
+        } catch (err) {
+            console.error("🚨 Erreur POST :", err);
+            alert("⚠️ Échec de l'ajout !");
+        }
     });
+
+    // 📌 Requêtes DELETE et PUT (modification/suppression)
+    document.addEventListener("click", async (event) => {  // Ajout de `async` ici
+        console.log("🖱️ Click détecté sur :", event.target);
+
+        // 📌 Requête Modifier
+        if (event.target.classList.contains("btn-modifier")) {
+            console.log("✅ Bouton Modifier cliqué !");
+            const rowId = event.target.dataset.id;
+            const row = allData.find(item => item.id == rowId);
+
+            if (row) {
+                console.log(`🔄 Modification en cours pour l'ID ${rowId}`);
+
+                // Sélection de la pop-up et du formulaire
+                const modal = document.getElementById("updateModal");
+                const form = document.getElementById("updateFormModal");
+
+                if (!modal || !form) {
+                    console.error("❌ Pop-up ou formulaire introuvable !");
+                    return;
+                }
+
+                const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
+                if (!userId) {
+                    alert("⚠️ Erreur : aucun user_id trouvé !");
+                    return;
+                }
+
+                // Remplissage des champs avec les données existantes
+                form.elements["id"].value = row.id;
+                form.elements["country"].value = row.country;
+                form.elements["date"].value = row.date;
+                form.elements["cases"].value = row.cases;
+                form.elements["deaths"].value = row.deaths;
+                form.elements["recovered"].value = row.recovered;
+                form.elements["active"].value = row.active;
+                form.elements["latitude"].value = row.latitude ?? "";
+                form.elements["longitude"].value = row.longitude ?? "";
+                form.elements["who_region"].value = row.who_region ?? "";
+                form.elements["mortality_rate"].value = row.mortality_rate ?? "";
+                form.elements["recovery_rate"].value = row.recovery_rate ?? "";
+
+                // Affichage de la pop-up
+                console.log("📌 Ouverture de la pop-up de modification...");
+                modal.style.display = "flex"; // Assurer l'affichage
+                modal.classList.remove("hidden");
+                setTimeout(() => {
+                    modal.classList.add("active");
+                }, 10);
+
+                // Gestion de la soumission du formulaire
+                form.onsubmit = async (e) => {
+                    e.preventDefault();
+
+                    const updatedData = {
+                        cases: form.elements["cases"].value,
+                        deaths: form.elements["deaths"].value,
+                        recovered: form.elements["recovered"].value,
+                        active: form.elements["active"].value,
+                        latitude: form.elements["latitude"].value || null,
+                        longitude: form.elements["longitude"].value || null,
+                        who_region: form.elements["who_region"].value || null,
+                        mortality_rate: form.elements["mortality_rate"].value || null,
+                        recovery_rate: form.elements["recovery_rate"].value || null
+                    };
+
+                    try {
+                        const apiUrl = `http://127.0.0.1:5000/data/${userId}/${row.country}/${row.date}`;
+                        console.log(`🔄 Envoi de la requête PUT à : ${apiUrl}`);
+
+                        const response = await fetch(apiUrl, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(updatedData),
+                        });
+
+                        if (!response.ok) throw new Error(await response.text());
+
+                        alert("✅ Donnée mise à jour !");
+                        modal.classList.remove("active");
+                        setTimeout(() => {
+                            modal.classList.add("hidden");
+                            modal.style.display = "none";
+                        }, 300);
+
+                        loadTableData(); 
+                    } catch (err) {
+                        console.error("🚨 Erreur lors de la mise à jour :", err);
+                        alert("⚠️ Échec de la modification !");
+                    }
+                };
+
+                // Gestion du bouton "Annuler"
+                document.getElementById("cancelUpdate").addEventListener("click", () => {
+                    console.log("❌ Annulation de la modification");
+                    modal.classList.remove("active");
+                    setTimeout(() => {
+                        modal.classList.add("hidden");
+                        modal.style.display = "none";
+                    }, 300);
+                });
+            }
+        }
+
+        // 🗑️ Suppression d'une donnée
+        if (event.target.classList.contains("btn-supprimer")) {
+            console.log("✅ Bouton Supprimer cliqué !");
+            const rowId = event.target.dataset.id;
+            const row = allData.find(item => item.id == rowId);
+
+            if (row) {
+                console.log(`🔄 Suppression en cours pour l'ID ${rowId}`);
+
+                const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
+                if (!userId) {
+                    alert("⚠️ Erreur : aucun user_id trouvé !");
+                    return;
+                }
+
+                const confirmation = confirm(`Êtes-vous sûr de vouloir supprimer la donnée pour ${row.country} ?`);
+
+                if (confirmation) {
+                    try {
+                        // Correction de l'URL pour la suppression : on utilise uniquement l'ID
+                        const apiUrl = `http://127.0.0.1:5000/data/${row.id}`;
+                        console.log(`🔄 Envoi de la requête DELETE à : ${apiUrl}`);
+
+                        const response = await fetch(apiUrl, {
+                            method: "DELETE",
+                        });
+
+                        if (!response.ok) throw new Error(await response.text());
+
+                        alert("✅ Donnée supprimée !");
+                        loadTableData(); 
+                    } catch (err) {
+                        console.error("🚨 Erreur lors de la suppression :", err);
+                        alert("⚠️ Échec de la suppression !");
+                    }
+                }
+            }
+        }
+    });
+
+    await waitForElement("#dashboard-pandemics");
+    await waitForElement("#dashboard-pandemics table");
+    await waitForElement("#table-body");
+    console.log("📌 Composants bien chargés, lancement de loadTableData()");
+    await loadTableData();
 });
