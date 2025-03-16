@@ -4,12 +4,12 @@
 Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'analyse, et la visualisation de données historiques sur les pandémies. L'application permettra aux chercheurs et aux décideurs de consulter des tableaux de bord interactifs et de modéliser des données pour formuler des hypothèses prédictives.
 
 ## Table of Contents
-[Features](#features)\
-[Technologies](#technologies)\
-[Architecture](#architecture)\
-[Installation](#installation)\
-[Usage](#usage)\
-[Contributors](#contributors)
+[Features](#features)  
+[Technologies](#technologies)  
+[Architecture](#architecture)  
+[Installation](#installation)  
+[Usage](#usage)  
+[Contributors](#contributors)  
 
 ## Features
 - Collecte de données à partir de fichiers JSON et CSV.
@@ -20,41 +20,41 @@ Ce projet vise à développer une plateforme pour la collecte, le nettoyage, l'a
 
 ## Technologies
 ### Backend
-  Python (Flask/FastAPI)\
-  MySQL\
-  Pandas (pour le nettoyage des données)
+- **Python** (FastAPI, Prefect, Pandas)
+- **PostgreSQL** (Base de données relationnelle)
+- **Uvicorn** (Serveur ASGI pour FastAPI)
 
 ### Frontend
-  HTML5\
-  CSS/SCSS\
-  JavaScript
+- **HTML5**, **CSS/SCSS**
+- **JavaScript**
 
 ### Outils de Documentation
-  Draw.io (modélisation des données)\
-  Swagger (documentation API)\
-  Figma (maquettes UI/UX)
+- **Draw.io** (Modélisation des données)
+- **Swagger** (Documentation API)
+- **Figma** (Maquettes UI/UX)
 
 ### Gestion de Projet
-  GitHub (versioning)\
-  GanttProject (planification)\
-  Méthodologie Agile
+- **GitHub** (Versioning)
+- **Méthodologie Agile**
 
 ## Architecture
 ```bash
 MSPR-DATA/ 
 ├── backend/ 
-│ ├── app/ 
-│ ├── migrations/ 
-│ └── tests/ 
+│   ├── etl_pipeline.py
+│   ├── fastapi_postgres_api.py
+│   ├── models.py
+│   └── tests/ 
 ├── frontend/ 
-│ ├── public/ 
-│ ├── components/ 
-│ └── tests/ 
+│   ├── public/ 
+│   ├── components/ 
+│   └── tests/ 
 ├── docs/ 
-│ ├── database/ 
-│ ├── api/ 
-│ ├── ui-ux/ 
-│ └── project/ 
+│   ├── database/ 
+│   ├── api/ 
+│   ├── ui-ux/ 
+│   └── project/ 
+├── start.sh
 ├── .gitignore 
 ├── README.md 
 └── requirements.txt
@@ -62,66 +62,116 @@ MSPR-DATA/
 
 ## Installation
 ### Prérequis
-- Python 3.10 ou supérieur
-- MySQL
-- Node.js (pour gérer les dépendances SCSS ou JavaScript si nécessaire)
+- **Python 3.10+**
+- **PostgreSQL installé et démarré**
+- **Node.js installé pour le serveur frontend**
+
+### Installation de PostgreSQL
+Si PostgreSQL n'est pas installé, suivez ces étapes :
+
+#### Windows
+1. **Téléchargez l'installateur** depuis [https://www.postgresql.org/download/](https://www.postgresql.org/download/).
+2. **Lancez l'installation** et suivez les instructions.
+3. **Notez le mot de passe de l'utilisateur `postgres`**.
+4. **Ajoutez PostgreSQL au PATH** (option activée par défaut dans l'installateur).
+
+#### Linux (Debian/Ubuntu)
+```bash
+sudo apt update && sudo apt install postgresql postgresql-contrib -y
+```
+#### macOS (via Homebrew)
+```bash
+brew install postgresql
+```
+
+### Ajouter PostgreSQL au PATH sous Windows
+1. **Ouvrez l'explorateur de fichiers** et allez dans :  
+   ```
+   C:\Program Files\PostgreSQL\
+   ```
+2. **Allez dans le dossier de votre version (`15` ou autre).**
+3. **Entrez dans le dossier `bin` et copiez ce chemin**, par exemple :
+   ```
+   C:\Program Files\PostgreSQL\15\bin
+   ```
+4. **Ajoutez ce chemin au PATH** :
+   - **Ouvrez les paramètres Windows** → Tapez **"Variables d'environnement"**.
+   - Dans **Variables système**, sélectionnez `Path` → **Modifier**.
+   - **Ajoutez un nouveau chemin** et collez celui copié.
+   - **Validez avec OK**.
+
+5. **Redémarrez votre terminal** et testez avec :
+   ```bash
+   pg_isready -h localhost -p 5432 -U postgres
+   ```
 
 ### Étapes
-1. Clonez le dépôt :
+1. **Placez-vous dans le bon répertoire** où vous souhaitez cloner le projet :
 ```bash
-git clone https://github.com/M10-white/MSPR-DATA.git
+cd /chemin/vers/votre/dossier
 ```
 
-2. Accédez au répertoire backend et installez les dépendances Python :
+2. **Clonez le dépôt** :
 ```bash
-cd backend
+git clone https://github.com/M10-white/MSPR-DATA.git
+cd MSPR-DATA
 ```
+
+3. **Installez les dépendances** :
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Configurez la base de données MySQL :
-
-- Importez le fichier schema.sql situé dans docs/database/.
-
-4. Démarrer le serveur FastAPI:
-   
-Pour démarrer l'application FastAPI, on utilise Uvicorn.\
-Exécutez la commande suivante dans le répertoire où se trouve main.py :
+4. **Vérifiez et démarrez PostgreSQL** :
 ```bash
-pip install uvicorn
+pg_isready -h localhost -p 5432 -U postgres
 ```
+Si PostgreSQL n'est pas actif, démarrez-le via votre gestionnaire de services ou avec :
 ```bash
-uvicorn app.main:app --reload
+sudo systemctl start postgresql
 ```
 
-5. Lancer un serveur local pour accéder au front
-Avant tout cela verifiez que vous avez Node.js d'installer.
+5. **Lancez le pipeline ETL, l'API et le frontend** :
 ```bash
-node -v
-```
-Ensuite installez http-server.
-```bash
-npm install -g http-server
-```
-Puis lancez le server local.
-```bash
-cd .\frontend\public\ 
-```
-```bash
-http-server -p 8000
+chmod +x start.sh  # Autoriser l'exécution du script
+./start.sh  # Exécuter le script
 ```
 
-### Usage
-- Accédez à l'application backend sur http://localhost:5000 (par défaut).
-- Consultez les tableaux de bord via le frontend (accédez à index.html dans votre navigateur).
+6. #### 🖥️ **Accéder au site**
+Ouvrez **[http://127.0.0.1:8000](http://127.0.0.1:8000)** dans votre navigateur.
 
-### Features
-Encapsulation avec Docker
-Multi-languages
+---
 
-### Contributors
-Anas Kotoub : Backend\
-Iliana Benchikh : Backend\
-Brahim Chaouki : Frontend & Backend\
-Akram Mahboubi : Frontend
+## 🛠 **Dépannage**
+### **PostgreSQL ne démarre pas ?**
+```bash
+sudo systemctl start postgresql
+```
+### **Erreur `ForeignKeyViolation` dans `etl_pipeline.py` ?**
+Ajoutez un utilisateur dans PostgreSQL :
+```sql
+INSERT INTO users (username, email, password) VALUES ('admin', 'admin@email.com', 'password123');
+```
+Puis relancez :
+```bash
+python backend/etl_pipeline.py
+```
+
+### **Erreur `Address already in use` sur le port 8000 ?**
+Trouvez le processus en cours :
+```bash
+lsof -i :8000
+```
+Puis tuez-le :
+```bash
+kill -9 <PID>
+```
+
+---
+
+## Contributors
+- **Anas Kotoub** : Backend
+- **Iliana Benchikh** : Backend
+- **Brahim Chaouki** : Frontend & Backend
+- **Akram Mahboubi** : Frontend
+

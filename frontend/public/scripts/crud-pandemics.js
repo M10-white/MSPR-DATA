@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
           country: rowData.country,
           date: rowData.date
         });
-        fetch("http://127.0.0.1:8000/data/?" + params.toString(), {
+        fetch("http://127.0.0.1:5000/data/?" + params.toString(), {
           method: "DELETE"
         })
         .then(res => res.json())
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (updatedData.mortality_rate) updatedData.mortality_rate = parseFloat(updatedData.mortality_rate);
       if (updatedData.recovery_rate) updatedData.recovery_rate = parseFloat(updatedData.recovery_rate);
 
-      fetch("http://127.0.0.1:8000/data/update/", {
+      fetch("http://127.0.0.1:5000/data/update/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData)
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function loadTableData() {
-    fetch("http://127.0.0.1:8000/data/")
+    fetch("http://127.0.0.1:5000/data/")
       .then(response => response.json())
       .then(data => {
         allData = data;
@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
     if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
   
-    fetch("http://127.0.0.1:8000/data/", {
+    fetch("http://127.0.0.1:5000/data/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)

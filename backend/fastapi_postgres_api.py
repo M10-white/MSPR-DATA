@@ -3,7 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 import pandas as pd
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 app = FastAPI()
 
@@ -23,29 +27,80 @@ def get_db_connection():
 
 # 💌 Modèle Pydantic pour la validation des entrées
 class PandemicData(BaseModel):
+    user_id: int  # Ajout de la relation avec l'utilisateur
     country: str
     date: str
     cases: int
     deaths: int
     recovered: int
     active: int
-    latitude: Optional[float] = None  # Ajout de la latitude
-    longitude: Optional[float] = None  # Ajout de la longitude
-    who_region: Optional[str] = None  # Ajout de la région OMS
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    who_region: Optional[str] = None
     mortality_rate: Optional[float] = None
     recovery_rate: Optional[float] = None
 
-# 💌 Route pour récupérer des données depuis PostgreSQL
+class User(BaseModel):
+    username: str
+    email: str
+    password: str
+
+# 💌 CRUD pour Users
+@app.post("/users/")
+def create_user(user: User):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        INSERT INTO users (username, email, password) 
+        VALUES (%s, %s, %s) RETURNING id;
+    """, (user.username, user.email, user.password))
+    
+    user_id = cursor.fetchone()[0]
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur créé avec succès", "user_id": user_id}
+
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    return {"id": user[0], "username": user[1], "email": user[2]}
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur supprimé avec succès"}
+
+# 💌 CRUD pour PandemicData
 @app.get("/data/")
-def get_data(country: Optional[str] = Query(None), start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+def get_data(user_id: Optional[int] = Query(None), country: Optional[str] = Query(None), start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     query = """
-        SELECT country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate 
+        SELECT user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate 
         FROM pandemic_data WHERE 1=1
     """
     params = []
+
+    if user_id:
+        query += " AND user_id = %s"
+        params.append(user_id)
 
     if country:
         query += " AND country = %s"
@@ -62,7 +117,7 @@ def get_data(country: Optional[str] = Query(None), start_date: Optional[str] = Q
     cursor.execute(query, tuple(params))
     data = cursor.fetchall()
 
-    columns = ["country", "date", "cases", "deaths", "recovered", "active", "latitude", "longitude", "who_region", "mortality_rate", "recovery_rate"]
+    columns = ["user_id", "country", "date", "cases", "deaths", "recovered", "active", "latitude", "longitude", "who_region", "mortality_rate", "recovery_rate"]
     df = pd.DataFrame(data, columns=columns)
 
     cursor.close()
@@ -70,113 +125,31 @@ def get_data(country: Optional[str] = Query(None), start_date: Optional[str] = Q
 
     return df.to_dict(orient="records")
 
-# 💌 Ajouter une nouvelle entrée dans la BDD
 @app.post("/data/")
 def add_data(entry: PandemicData):
     conn = get_db_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
-        INSERT INTO pandemic_data (country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (country, date) 
-        DO UPDATE SET 
-            cases = EXCLUDED.cases,
-            deaths = EXCLUDED.deaths,
-            recovered = EXCLUDED.recovered,
-            active = EXCLUDED.active,
-            latitude = EXCLUDED.latitude,
-            longitude = EXCLUDED.longitude,
-            who_region = EXCLUDED.who_region,
-            mortality_rate = EXCLUDED.mortality_rate,
-            recovery_rate = EXCLUDED.recovery_rate;
-    """, (entry.country, entry.date, entry.cases, entry.deaths, entry.recovered, entry.active, entry.latitude, entry.longitude, entry.who_region, entry.mortality_rate, entry.recovery_rate))
-
+        INSERT INTO pandemic_data (user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """, (entry.user_id, entry.country, entry.date, entry.cases, entry.deaths, entry.recovered, entry.active, entry.latitude, entry.longitude, entry.who_region, entry.mortality_rate, entry.recovery_rate))
     conn.commit()
     cursor.close()
     conn.close()
     return {"message": "✅ Données insérées avec succès"}
 
-# 💌 Supprimer une entrée
 @app.delete("/data/")
-def delete_data(country: str, date: str):
+def delete_data(user_id: int, country: str, date: str):
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM pandemic_data WHERE country = %s AND date = %s", (country, date))
-
+    cursor.execute("DELETE FROM pandemic_data WHERE user_id = %s AND country = %s AND date = %s", (user_id, country, date))
     if cursor.rowcount == 0:
         raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour suppression")
-
     conn.commit()
     cursor.close()
     conn.close()
     return {"message": "✅ Données supprimées avec succès"}
 
-# 💌 Modifier une entrée existante
-@app.put("/data/update/")
-def update_data(entry: PandemicData):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Vérifier si l'entrée existe
-    cursor.execute("SELECT * FROM pandemic_data WHERE country = %s AND date = %s", (entry.country, entry.date))
-    existing_data = cursor.fetchone()
-
-    if not existing_data:
-        raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour mise à jour")
-
-    # Construction dynamique de la requête SQL avec uniquement les champs fournis
-    update_fields = []
-    params = []
-
-    if entry.cases is not None:
-        update_fields.append("cases = %s")
-        params.append(entry.cases)
-    if entry.deaths is not None:
-        update_fields.append("deaths = %s")
-        params.append(entry.deaths)
-    if entry.recovered is not None:
-        update_fields.append("recovered = %s")
-        params.append(entry.recovered)
-    if entry.active is not None:
-        update_fields.append("active = %s")
-        params.append(entry.active)
-    if entry.latitude is not None:
-        update_fields.append("latitude = %s")
-        params.append(entry.latitude)
-    if entry.longitude is not None:
-        update_fields.append("longitude = %s")
-        params.append(entry.longitude)
-    if entry.who_region is not None:
-        update_fields.append("who_region = %s")
-        params.append(entry.who_region)
-    if entry.mortality_rate is not None:
-        update_fields.append("mortality_rate = %s")
-        params.append(entry.mortality_rate)
-    if entry.recovery_rate is not None:
-        update_fields.append("recovery_rate = %s")
-        params.append(entry.recovery_rate)
-
-    if not update_fields:
-        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
-
-    # Construire la requête finale
-    query = f"""
-        UPDATE pandemic_data
-        SET {', '.join(update_fields)}
-        WHERE country = %s AND date = %s
-    """
-    params.append(entry.country)
-    params.append(entry.date)
-
-    cursor.execute(query, tuple(params))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"message": "✅ Données mises à jour avec succès"}
-
-# 💌 Test de connexion
 @app.get("/test_connection/")
 def test_connection():
     try:
@@ -185,6 +158,37 @@ def test_connection():
         return {"status": "✅ Connexion réussie à PostgreSQL"}
     except Exception as e:
         return {"status": "❌ Échec de connexion", "error": str(e)}
+
+@app.post("/login")
+def login(user: UserLogin):
+    """
+    Vérifie si l'email et le mot de passe correspondent à un user en base.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Récupérer l'utilisateur via son email
+    cursor.execute("SELECT id, username, email, password FROM users WHERE email = %s", (user.email,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not row:
+        # Aucun user avec cet email
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
+    
+    user_id, username, email, db_password = row
+
+    # Vérification du mot de passe (exemple simplifié, sans hachage)
+    if user.password != db_password:
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
+
+    # Si OK, on renvoie un message de succès ou un token
+    return {
+        "message": "Connexion réussie !",
+        "user_id": user_id,
+        "username": username
+    }
 
 # 💌 Lancer l'API avec uvicorn
 # Commande : uvicorn fastapi_postgres_api:app --reload
