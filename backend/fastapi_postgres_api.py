@@ -106,6 +106,31 @@ def delete_user(user_id: int):
     conn.close()
     return {"message": "✅ Utilisateur supprimé avec succès"}
 
+@app.put("/users/{user_id}")
+def update_user(user_id: int, updated_user: User):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Vérifie que l'utilisateur existe
+    cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+    if cursor.fetchone() is None:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Met à jour l'utilisateur
+    cursor.execute("""
+        UPDATE users
+        SET username = %s,
+            email = %s,
+            password = %s
+        WHERE id = %s
+    """, (updated_user.username, updated_user.email, updated_user.password, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur mis à jour avec succès"}
+
+
 # 💌 CRUD pour PandemicData
 @app.get("/data/")
 def get_data(user_id: Optional[int] = Query(None), country: Optional[str] = Query(None), start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
