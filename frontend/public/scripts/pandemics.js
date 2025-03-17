@@ -244,9 +244,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  function applyFilters() {
+    const countryValue = document.getElementById("country").value;
+    const omsValue = document.getElementById("omsRegion").value;
+    const dateValue = document.getElementById("date").value;
+  
+    filteredData = allData.filter(row => {
+      let match = true;
+  
+      // Filtre par pays
+      if (countryValue !== "all") {
+        match = match && (row.country.toLowerCase() === countryValue.toLowerCase());
+      }
+  
+      // Filtre par région
+      if (omsValue !== "all") {
+        match = match && (row.who_region.toLowerCase() === omsValue.toLowerCase());
+      }
+  
+      // Filtre par date
+      if (dateValue) {
+        match = match && (row.date === dateValue);
+      }
+  
+      return match;
+    });
+  
+    currentPage = 1;
+    displayPage(currentPage);
+  }
+  
+
+  function waitForFilterElements() {
+    const countrySelect = document.getElementById("country");
+    const omsSelect = document.getElementById("omsRegion");
+    const dateInput = document.getElementById("date");
+  
+    if (!countrySelect || !omsSelect || !dateInput) {
+      console.warn("Les éléments de filtre ne sont pas encore disponibles, nouvelle tentative...");
+      setTimeout(waitForFilterElements, 500);
+      return;
+    }
+    // Une fois trouvés, on attache les écouteurs
+    countrySelect.addEventListener("change", applyFilters);
+    omsSelect.addEventListener("change", applyFilters);
+    dateInput.addEventListener("change", applyFilters);
+  
+    applyFilters();
+  }
+
   // Charger le tableau au démarrage
   fetchTableData();
   waitForPaginationElements();
+  waitForFilterElements();
 
   // === Gestion du formulaire d'ajout ===
   document.getElementById("addForm").addEventListener("submit", function(e) {
