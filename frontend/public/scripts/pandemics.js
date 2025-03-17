@@ -1,239 +1,282 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    const componentsPandemics = [
-        { id: 'header', file: 'components/header.html' },
-        { id: 'dashboard-pandemics', file: 'components/dashboard-pandemics.html' },
-    ];
-    
+document.addEventListener("DOMContentLoaded", async () => {
+  // Fonction simple pour afficher un message (ici avec alert)
+  function showPopup(message, callback) {
+    alert(message);
+    if (callback) callback();
+  }
 
-    for (const { id, file } of componentsPandemics) {
-        const response = await fetch(file);
-        const html = await response.text();
-        document.getElementById(id).innerHTML = html;
+  // === Chargement des composants principaux ===
+  const componentsPandemics = [
+    { id: 'header', file: 'components/header.html' },
+    { id: 'dashboard-pandemics', file: 'components/dashboard-pandemics.html' },
+  ];
+
+  for (const { id, file } of componentsPandemics) {
+    const response = await fetch(file);
+    const html = await response.text();
+    document.getElementById(id).innerHTML = html;
+  }
+
+  // Charge les sous-composants du Dashboard
+  const dashboardComponentsPandemics = [
+    { id: 'filter-bar', file: 'components/filter-barPandemics.html' },
+    { id: 'data-table', file: 'components/table-pandemics.html' },
+  ];
+
+  for (const { id, file } of dashboardComponentsPandemics) {
+    const response = await fetch(file);
+    const html = await response.text();
+    const container = document.querySelector(`.${id}`);
+    if (container) {
+      container.innerHTML = html;
+    }
+  }
+
+  console.log("✅ Tous les composants sont chargés !");
+  console.log("🚀 Recherche du tableau...");
+
+  // === Gestion du modal pour les options sur une ligne ===
+  function openRowOptions(rowData) {
+    const modal = document.getElementById("rowOptionsModal");
+    if (!modal) {
+      console.error("Modal rowOptionsModal introuvable !");
+      return;
+    }
+    const rowDetails = document.getElementById("rowDetails");
+    rowDetails.textContent = `Pays: ${rowData.country} | Date: ${rowData.date} | Cas: ${rowData.cases} | Décès: ${rowData.deaths}`;
+    modal.classList.remove("hidden");
+
+    const btnUpdate = document.getElementById("btnUpdateRow");
+    const btnDelete = document.getElementById("btnDeleteRow");
+    const btnCancel = document.getElementById("btnCancelRow");
+
+    if (!btnUpdate || !btnDelete || !btnCancel) {
+      console.error("Un ou plusieurs boutons du modal ne sont pas trouvés.");
+      return;
     }
 
-    // Charge les sous-composants du Dashboard
-    const dashboardComponentsPandemics = [
-        { id: 'filter-bar', file: 'components/filter-barPandemics.html' },
-        { id: 'data-table', file: 'components/table-pandemics.html' },
-    ];
-    
+    btnUpdate.onclick = function() {
+      modal.classList.add("hidden");
+      openUpdateModal(rowData);
+    };
 
-    for (const { id, file } of dashboardComponentsPandemics) {
-        const response = await fetch(file);
-        const html = await response.text();
-        const container = document.querySelector(`.${id}`);
-
-        if (container) {
-            container.innerHTML = html;
-        } // else {
-        //     console.error(`🚨 Impossible de trouver l'élément .${id} dans le DOM`);
-        // }
-    }
-
-    console.log("✅ Tous les composants sont chargés !");
-    console.log("🚀 Recherche du tableau...");
-
-    // Variables pour la pagination
-    let allData = [];         // Stocke toutes les données récupérées
-    let filteredData = [];    // Stocke les données filtrées après application des filtres
-    let currentPage = 1;
-    const rowsPerPage = 10;   // Nombre de lignes à afficher par page
-
-    // Vérifie que le tableau est présent
-    function checkTableLoaded() {
-        const tableBody = document.querySelector("#data-table tbody");
-        if (!tableBody) {
-            console.warn("⏳ Tableau non encore disponible, nouvelle tentative...");
-            setTimeout(checkTableLoaded, 500); // Réessaye après 500ms
-            return;
-        }
-        console.log("✅ Tableau trouvé, chargement des données...");
-        loadTableData();
-        waitForPaginationElements(); // Attendre que les éléments de pagination soient chargés
-    }
-
-    // Fonction loadTableData() d'origine (inchangée, limite aux 10 premières lignes)
-    function loadTableData() {
-        fetch("http://127.0.0.1:5000/data/")  
-            .then(response => response.json())
-            .then(data => {
-                allData = data;         // Stocke toutes les données
-                filteredData = data;    // Par défaut, pas de filtre
-                const tableBody = document.querySelector("#data-table tbody");
-                tableBody.innerHTML = ""; 
-                
-                if (allData.length === 0) {
-                    tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
-                    return;
-                }
-                
-                // Affiche la première page (10 premières lignes)
-                displayPage(1);
-            })
-            .catch(error => console.error("🚨 Erreur lors du chargement des données :", error));
-    }
-
-    // Applique les filtres
-    function applyFilters() {
-        const countryFilter = document.getElementById("country").value;
-        const omsFilter = document.getElementById("omsRegion").value;
-        const dateFilter = document.getElementById("date").value;
-
-        filteredData = allData.filter(row => {
-            let match = true;
-            
-            // Filtre par pays
-            if (countryFilter !== "all") {
-                // compare "china" === "china" etc.
-                match = match && row.country.toLowerCase() === countryFilter.toLowerCase();
-            }
-
-            // Filtre par région OMS
-            if (omsFilter !== "all") {
-                match = match && row.who_region.toLowerCase() === omsFilter.toLowerCase();
-            }
-
-            // Filtre par date
-            if (dateFilter) {
-                // row.date doit correspondre exactement, ex: "2020-01-23"
-                match = match && row.date === dateFilter;
-            }
-
-            return match;
-        });
-
-        currentPage = 1;       // Réinitialise la page
-        displayPage(currentPage);
-    }
-
-    // Affiche la page demandée
-    function displayPage(page) {
-        const tableBody = document.querySelector("#data-table tbody");
-        tableBody.innerHTML = ""; // Efface les lignes actuelles
-
-        // On affiche filteredData (si un filtre est actif) ou allData (si pas de filtre)
-        // Ici, on a mis filteredData = allData par défaut, donc on utilise toujours filteredData
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageData = filteredData.slice(start, end);
-
-        if (pageData.length === 0) {
-            tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
-            return;
-        }
-
-        pageData.forEach(row => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${row.country}</td>
-                <td>${row.date}</td>
-                <td>${row.cases}</td>
-                <td>${row.deaths}</td>
-                <td>${row.recovered}</td>
-                <td>${row.active}</td>
-                <td>${row.latitude ?? "N/A"}</td>
-                <td>${row.longitude ?? "N/A"}</td>
-                <td>${row.who_region ?? "N/A"}</td>
-                <td>${row.mortality_rate ?? "N/A"}%</td>
-                <td>${row.recovery_rate ?? "N/A"}%</td>
-            `;
-            tableBody.appendChild(tr);
-        });
-
-        // Mettre à jour l'affichage de la pagination
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        const pageInfo = document.querySelector("#pageInfo");
-        if (pageInfo) {
-            pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
-        }
-        const prevBtn = document.querySelector("#prevPage");
-        const nextBtn = document.querySelector("#nextPage");
-        if (prevBtn) prevBtn.disabled = currentPage === 1;
-        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
-    }
-
-    function waitForFilterElements() {
-        const countrySelect = document.getElementById("country");
-        const omsSelect = document.getElementById("omsRegion");
-        const dateInput = document.getElementById("date");
-      
-        if (!countrySelect || !omsSelect || !dateInput) {
-          console.warn("⏳ Éléments de filtre non encore disponibles, nouvelle tentative...");
-          setTimeout(waitForFilterElements, 500);
-          return;
-        }
-      
-        // Une fois trouvés, on peut attacher les écouteurs
-        countrySelect.addEventListener("change", applyFilters);
-        omsSelect.addEventListener("change", applyFilters);
-        dateInput.addEventListener("change", applyFilters);
-      }
-      
-      // Puis, appelez cette fonction
-      waitForFilterElements();      
-
-    // Fonction pour attacher les écouteurs aux boutons de pagination une fois qu'ils sont présents
-    function waitForPaginationElements() {
-        const prevBtn = document.querySelector("#prevPage");
-        const nextBtn = document.querySelector("#nextPage");
-        const pageInfo = document.querySelector("#pageInfo");
-
-        if (!prevBtn || !nextBtn || !pageInfo) {
-            // Si l'un des éléments n'est pas trouvé, réessayer après 500ms
-            setTimeout(waitForPaginationElements, 500);
-            return;
-        }
-
-        prevBtn.addEventListener("click", () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayPage(currentPage);
-            }
-        });
-
-        nextBtn.addEventListener("click", () => {
-            if (currentPage < Math.ceil(filteredData.length / rowsPerPage)) {
-                currentPage++;
-                displayPage(currentPage);
-            }
-        });
-    }
-
-    checkTableLoaded();
-
-    // Écouteurs sur les filtres
-    document.getElementById("country").addEventListener("change", applyFilters);
-    document.getElementById("omsRegion").addEventListener("change", applyFilters);
-    document.getElementById("date").addEventListener("change", applyFilters);
-
-    // === Gestion du formulaire d'ajout (inchangé) ===
-    document.getElementById("addForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-        data.cases = parseInt(data.cases);
-        data.deaths = parseInt(data.deaths);
-        data.recovered = parseInt(data.recovered);
-        data.active = parseInt(data.active);
-        if (data.latitude) data.latitude = parseFloat(data.latitude);
-        if (data.longitude) data.longitude = parseFloat(data.longitude);
-        if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
-        if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
-      
-        fetch("http://127.0.0.1:5000/data/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
+    btnDelete.onclick = function() {
+      modal.classList.add("hidden");
+      if (confirm("Confirmez-vous la suppression de cette donnée ?")) {
+        // Utiliser l'identifiant unique (rowData.id) pour la suppression
+        fetch(`http://127.0.0.1:5000/data/${rowData.id}`, {
+          method: "DELETE"
         })
         .then(res => res.json())
         .then(result => {
-          showPopup("Donnée ajoutée avec succès !", function() {
-            location.reload();
-          });
+          alert("Donnée supprimée avec succès !");
+          fetchTableData();
         })
         .catch(err => {
-          console.error("Erreur lors de l'ajout :", err);
-          showPopup("Erreur lors de l'ajout de la donnée !");
+          console.error("Erreur lors de la suppression :", err);
+          alert("Erreur lors de la suppression !");
         });
+      }
+    };
+
+    btnCancel.onclick = function() {
+      modal.classList.add("hidden");
+    };
+  }
+
+  // === Fonction pour ouvrir le modal de modification avec le formulaire pré-rempli ===
+  function openUpdateModal(rowData) {
+    const updateModal = document.getElementById("updateModal");
+    if (!updateModal) {
+      console.error("Modal updateModal introuvable !");
+      return;
+    }
+    const updateFormModal = document.getElementById("updateFormModal");
+    if (!updateFormModal) {
+      console.error("Le formulaire updateFormModal est introuvable !");
+      return;
+    }
+    // Pré-remplissage des champs
+    updateFormModal.elements["country"].value = rowData.country;
+    updateFormModal.elements["date"].value = rowData.date;
+    updateFormModal.elements["cases"].value = rowData.cases;
+    updateFormModal.elements["deaths"].value = rowData.deaths;
+    updateFormModal.elements["recovered"].value = rowData.recovered;
+    updateFormModal.elements["active"].value = rowData.active;
+    updateFormModal.elements["latitude"].value = rowData.latitude || "";
+    updateFormModal.elements["longitude"].value = rowData.longitude || "";
+    updateFormModal.elements["who_region"].value = rowData.who_region || "";
+    updateFormModal.elements["mortality_rate"].value = rowData.mortality_rate || "";
+    updateFormModal.elements["recovery_rate"].value = rowData.recovery_rate || "";
+
+    updateModal.classList.remove("hidden");
+
+    updateFormModal.onsubmit = function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const updatedData = Object.fromEntries(formData.entries());
+      // Conversion des valeurs numériques
+      updatedData.cases = parseInt(updatedData.cases);
+      updatedData.deaths = parseInt(updatedData.deaths);
+      updatedData.recovered = parseInt(updatedData.recovered);
+      updatedData.active = parseInt(updatedData.active);
+      if (updatedData.latitude) updatedData.latitude = parseFloat(updatedData.latitude);
+      if (updatedData.longitude) updatedData.longitude = parseFloat(updatedData.longitude);
+      if (updatedData.mortality_rate) updatedData.mortality_rate = parseFloat(updatedData.mortality_rate);
+      if (updatedData.recovery_rate) updatedData.recovery_rate = parseFloat(updatedData.recovery_rate);
+
+      // Construire l'URL pour l'update en utilisant user_id, country et date
+      const url = `http://127.0.0.1:5000/data/${rowData.user_id}/${rowData.country}/${rowData.date}`;
+      fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData)
+      })
+      .then(res => res.json())
+      .then(result => {
+        alert("Donnée modifiée avec succès !");
+        fetchTableData();
+      })
+      .catch(err => {
+        console.error("Erreur lors de la modification :", err);
+        alert("Erreur lors de la modification !");
+      });
+    };
+
+    const cancelBtn = document.getElementById("cancelUpdate");
+    if (cancelBtn) {
+      cancelBtn.onclick = function() {
+        updateModal.classList.add("hidden");
+      };
+    } else {
+      console.error("Le bouton 'cancelUpdate' est introuvable !");
+    }
+  }
+
+  // === Pagination et affichage du tableau ===
+  let allData = [];
+  let currentPage = 1;
+  const rowsPerPage = 10;
+
+  // Récupérer les données pour un user_id fixe (ici 1)
+  function fetchTableData() {
+    fetch("http://127.0.0.1:5000/data/1")
+      .then(response => response.json())
+      .then(data => {
+        allData = data;
+        if (!Array.isArray(allData)) {
+          console.error("La réponse n'est pas un tableau :", allData);
+          return;
+        }
+        if (allData.length === 0) {
+          document.querySelector("#data-table tbody").innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+          return;
+        }
+        displayPage(1);
+      })
+      .catch(error => console.error("Erreur lors du chargement des données :", error));
+  }
+
+  function displayPage(page) {
+    const tableBody = document.querySelector("#data-table tbody");
+    tableBody.innerHTML = "";
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = allData.slice(start, end);
+    if (pageData.length === 0) {
+      tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+      return;
+    }
+    pageData.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row.country}</td>
+        <td>${row.date}</td>
+        <td>${row.cases}</td>
+        <td>${row.deaths}</td>
+        <td>${row.recovered}</td>
+        <td>${row.active}</td>
+        <td>${row.latitude ?? "N/A"}</td>
+        <td>${row.longitude ?? "N/A"}</td>
+        <td>${row.who_region ?? "N/A"}</td>
+        <td>${typeof row.mortality_rate === "number" ? row.mortality_rate.toFixed(3) : "N/A"}%</td>
+        <td>${typeof row.recovery_rate === "number" ? row.recovery_rate.toFixed(3) : "N/A"}%</td>
+      `;
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", function() {
+        openRowOptions(row);
+      });
+      tableBody.appendChild(tr);
     });
+    const totalPages = Math.ceil(allData.length / rowsPerPage);
+    const pageInfo = document.querySelector("#pageInfo");
+    if (pageInfo) {
+      pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+    }
+    const prevBtn = document.querySelector("#prevPage");
+    const nextBtn = document.querySelector("#nextPage");
+    if (prevBtn) {
+      prevBtn.style.display = currentPage === 1 ? "none" : "block";
+    }
+    if (nextBtn) {
+      nextBtn.style.display = currentPage === totalPages ? "none" : "block";
+    }
+  }
+
+  function waitForPaginationElements() {
+    const prevBtn = document.querySelector("#prevPage");
+    const nextBtn = document.querySelector("#nextPage");
+    if (!prevBtn || !nextBtn) {
+      setTimeout(waitForPaginationElements, 500);
+      return;
+    }
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        displayPage(currentPage);
+      }
+    });
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < Math.ceil(allData.length / rowsPerPage)) {
+        currentPage++;
+        displayPage(currentPage);
+      }
+    });
+  }
+
+  // Charger le tableau au démarrage
+  fetchTableData();
+  waitForPaginationElements();
+
+  // === Gestion du formulaire d'ajout ===
+  document.getElementById("addForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    // Conversion des valeurs numériques
+    data.cases = parseInt(data.cases);
+    data.deaths = parseInt(data.deaths);
+    data.recovered = parseInt(data.recovered);
+    data.active = parseInt(data.active);
+    if (data.latitude) data.latitude = parseFloat(data.latitude);
+    if (data.longitude) data.longitude = parseFloat(data.longitude);
+    if (data.mortality_rate) data.mortality_rate = parseFloat(data.mortality_rate);
+    if (data.recovery_rate) data.recovery_rate = parseFloat(data.recovery_rate);
+  
+    fetch("http://127.0.0.1:5000/data/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      showPopup("Donnée ajoutée avec succès !", function() {
+        fetchTableData();
+      });
+    })
+    .catch(err => {
+      console.error("Erreur lors de l'ajout :", err);
+      showPopup("Erreur lors de l'ajout de la donnée !");
+    });
+  });
 });

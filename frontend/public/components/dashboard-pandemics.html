@@ -7,6 +7,7 @@
         <!-- Formulaire d'ajout -->
         <h2>Ajouter une nouvelle donnée</h2>
         <form id="addForm">
+            <input type="hidden" name="user_id" value="1">
             <input type="text" name="country" placeholder="Pays" required>
             <input type="date" name="date" placeholder="Date" required>
             <input type="number" name="cases" placeholder="Cas" required>
@@ -53,6 +54,7 @@
         <div class="popup-content">
             <h3>Modifier la donnée</h3>
             <form id="updateFormModal">
+                <input type="hidden" name="user_id" value="1">
                 <input type="text" name="country" placeholder="Pays" readonly>
                 <input type="date" name="date" placeholder="Date" readonly>
                 <input type="number" name="cases" placeholder="Cas" required>

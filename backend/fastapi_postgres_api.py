@@ -4,6 +4,12 @@ import psycopg2
 import pandas as pd
 from typing import Optional
 from pydantic import BaseModel, EmailStr
+import logging
+from fastapi.responses import JSONResponse
+
+
+logging.basicConfig(level=logging.DEBUG)
+
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -13,11 +19,13 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Autorise toutes les origines
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # ← Ajoute ça pour voir si ça règle le souci
 )
+
 
 # 💌 Connexion à la base de données PostgreSQL
 DATABASE_URL = "dbname=pandemics user=postgres password=admin host=localhost port=5432"
@@ -44,6 +52,22 @@ class User(BaseModel):
     username: str
     email: str
     password: str
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+
+class PandemicUpdate(BaseModel):
+    cases: Optional[int] = None
+    deaths: Optional[int] = None
+    recovered: Optional[int] = None
+    active: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    who_region: Optional[str] = None
+    mortality_rate: Optional[float] = None
+    recovery_rate: Optional[float] = None
 
 # 💌 CRUD pour Users
 @app.get("/users/")
@@ -130,79 +154,98 @@ def update_user(user_id: int, updated_user: User):
     conn.close()
     return {"message": "✅ Utilisateur mis à jour avec succès"}
 
-
 # 💌 CRUD pour PandemicData
-@app.get("/data/")
-def get_data(user_id: Optional[int] = Query(None), country: Optional[str] = Query(None), start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)):
+@app.get("/data/{user_id}")
+def get_data(user_id: int):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    query = """
-        SELECT user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate 
-        FROM pandemic_data WHERE 1=1
-    """
-    params = []
+    cursor.execute("""
+        SELECT id, country, latitude, longitude, date, cases, deaths, recovered, active, who_region, mortality_rate, recovery_rate 
+        FROM pandemic_data
+        WHERE user_id = %s
+    """, (user_id,))
+    
+    rows = cursor.fetchall()
 
-    if user_id:
-        query += " AND user_id = %s"
-        params.append(user_id)
+    # Vérifier si des données existent pour cet utilisateur
+    if not rows:
+        raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour cet utilisateur")
 
-    if country:
-        query += " AND country = %s"
-        params.append(country)
-
-    if start_date:
-        query += " AND date >= %s"
-        params.append(start_date)
-
-    if end_date:
-        query += " AND date <= %s"
-        params.append(end_date)
-
-    cursor.execute(query, tuple(params))
-    data = cursor.fetchall()
-
-    columns = ["user_id", "country", "date", "cases", "deaths", "recovered", "active", "latitude", "longitude", "who_region", "mortality_rate", "recovery_rate"]
-    df = pd.DataFrame(data, columns=columns)
+    # Récupérer les noms de colonnes
+    colnames = [desc[0] for desc in cursor.description]
 
     cursor.close()
     conn.close()
 
-    return df.to_dict(orient="records")
+    # Transformer en JSON propre
+    result = [dict(zip(colnames, row)) for row in rows]
+
+    return result  # FastAPI convertira automatiquement en JSON
+
 
 @app.post("/data/")
 def add_data(entry: PandemicData):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO pandemic_data (user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (entry.user_id, entry.country, entry.date, entry.cases, entry.deaths, entry.recovered, entry.active, entry.latitude, entry.longitude, entry.who_region, entry.mortality_rate, entry.recovery_rate))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"message": "✅ Données insérées avec succès"}
+    import logging
+    from fastapi.encoders import jsonable_encoder
 
-@app.delete("/data/")
-def delete_data(user_id: int, country: str, date: str):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM pandemic_data WHERE user_id = %s AND country = %s AND date = %s", (user_id, country, date))
-    if cursor.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour suppression")
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"message": "✅ Données supprimées avec succès"}
+    logging.debug(f"📥 Données reçues : {jsonable_encoder(entry)}")
 
-@app.get("/test_connection/")
-def test_connection():
     try:
         conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO pandemic_data (user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (entry.user_id, entry.country, entry.date, entry.cases, entry.deaths, entry.recovered, entry.active, entry.latitude, entry.longitude, entry.who_region, entry.mortality_rate, entry.recovery_rate))
+
+        conn.commit()
+        cursor.close()
         conn.close()
-        return {"status": "✅ Connexion réussie à PostgreSQL"}
+        return {"message": "✅ Données insérées avec succès"}
+    
     except Exception as e:
-        return {"status": "❌ Échec de connexion", "error": str(e)}
+        logging.error(f"🚨 Erreur lors de l'ajout : {str(e)}")
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
+@app.put("/data/{user_id}/{country}/{date}")
+def update_data(user_id: int, country: str, date: str, data_update: PandemicUpdate):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    update_fields = []
+    params = []
+    
+    for field, value in data_update.dict(exclude_unset=True).items():
+        update_fields.append(f"{field} = %s")
+        params.append(value)
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
+    
+    params.extend([user_id, country, date])
+    query = f"""
+        UPDATE pandemic_data SET {', '.join(update_fields)}
+        WHERE user_id = %s AND country = %s AND date = %s
+    """
+    cursor.execute(query, tuple(params))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Données mises à jour avec succès"}
+
+@app.delete("/data/{id}")
+def delete_data(id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM pandemic_data WHERE id = %s", (id,))
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Donnée non trouvée")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Donnée supprimée avec succès"}
+
 
 @app.post("/login")
 def login(user: UserLogin):
@@ -235,5 +278,11 @@ def login(user: UserLogin):
         "username": username
     }
 
-# 💌 Lancer l'API avec uvicorn
-# Commande : uvicorn fastapi_postgres_api:app --reload
+@app.get("/test_connection/")
+def test_connection():
+    try:
+        conn = get_db_connection()
+        conn.close()
+        return {"status": "✅ Connexion réussie à PostgreSQL"}
+    except Exception as e:
+        return {"status": "❌ Échec de connexion", "error": str(e)}
