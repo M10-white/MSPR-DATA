@@ -245,32 +245,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function applyFilters() {
-    const countryValue = document.getElementById("country").value;
-    const omsValue = document.getElementById("omsRegion").value;
-    const dateValue = document.getElementById("date").value;
+    const countryFilter = document.getElementById("country").value;
+    const omsFilter = document.getElementById("omsRegion").value;
+    const dateFilter = document.getElementById("date").value;
+  
+    console.log("Filtres appliqués :", countryFilter, omsFilter, dateFilter);
   
     filteredData = allData.filter(row => {
       let match = true;
   
-      // Filtre par pays
-      if (countryValue !== "all") {
-        match = match && (row.country.toLowerCase() === countryValue.toLowerCase());
+      // Filtre par pays (en supprimant les espaces superflus)
+      if (countryFilter !== "all") {
+        match = match && row.country.toLowerCase().trim() === countryFilter.toLowerCase().trim();
       }
   
-      // Filtre par région
-      if (omsValue !== "all") {
-        match = match && (row.who_region.toLowerCase() === omsValue.toLowerCase());
+      // Filtre par région OMS
+      if (omsFilter !== "all") {
+        match = match && row.who_region && row.who_region.toLowerCase().trim() === omsFilter.toLowerCase().trim();
       }
   
-      // Filtre par date
-      if (dateValue) {
-        match = match && (row.date === dateValue);
+      // Filtre par date (normalisation de la date)
+      if (dateFilter) {
+        // On convertit row.date en objet Date, puis on récupère le format ISO "YYYY-MM-DD"
+        const rowDate = new Date(row.date).toISOString().substring(0, 10);
+        match = match && rowDate === dateFilter;
       }
   
       return match;
     });
   
-    currentPage = 1;
+    console.log("Données filtrées :", filteredData);
+    currentPage = 1; // Réinitialise la page à 1
     displayPage(currentPage);
   }
   
@@ -279,24 +284,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     const countrySelect = document.getElementById("country");
     const omsSelect = document.getElementById("omsRegion");
     const dateInput = document.getElementById("date");
-  
+
     if (!countrySelect || !omsSelect || !dateInput) {
-      console.warn("Les éléments de filtre ne sont pas encore disponibles, nouvelle tentative...");
+      console.warn("⏳ Éléments de filtre non encore disponibles, nouvelle tentative...");
       setTimeout(waitForFilterElements, 500);
       return;
     }
+
     // Une fois trouvés, on attache les écouteurs
     countrySelect.addEventListener("change", applyFilters);
     omsSelect.addEventListener("change", applyFilters);
     dateInput.addEventListener("change", applyFilters);
-  
+
+    // Appliquer immédiatement les filtres si besoin
     applyFilters();
   }
+
+  waitForFilterElements();
+
 
   // Charger le tableau au démarrage
   fetchTableData();
   waitForPaginationElements();
-  waitForFilterElements();
 
   // === Gestion du formulaire d'ajout ===
   document.getElementById("addForm").addEventListener("submit", function(e) {
