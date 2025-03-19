@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (callback) callback();
   }
 
-  // === Chargement des composants principaux ===
   const componentsPandemics = [
     { id: 'header', file: 'components/header.html' },
     { id: 'dashboard-pandemics', file: 'components/dashboard-pandemics.html' },
@@ -17,7 +16,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById(id).innerHTML = html;
   }
 
-  // Charge les sous-composants du Dashboard
   const dashboardComponentsPandemics = [
     { id: 'filter-bar', file: 'components/filter-barPandemics.html' },
     { id: 'data-table', file: 'components/table-pandemics.html' },
@@ -63,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnDelete.onclick = function() {
       modal.classList.add("hidden");
       if (confirm("Confirmez-vous la suppression de cette donnée ?")) {
-        // Utiliser l'identifiant unique (rowData.id) pour la suppression
+        // Utilise l'identifiant unique (rowData.id) pour la suppression
         fetch(`http://127.0.0.1:5000/data/${rowData.id}`, {
           method: "DELETE"
         })
@@ -155,11 +153,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       updatedData.recovery_rate = updatedData.recovery_rate.trim() === "" ? 0 : parseFloat(updatedData.recovery_rate);
       
       // Récupération de l'user_id
-      const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
-      // Normalisation de la date (YYYY-MM-DD)
+      const userId = sessionStorage.getItem("user_id");
       const normalizedDate = new Date(rowData.date).toISOString().substring(0, 10);
       const url = `http://127.0.0.1:5000/data/${userId}/${rowData.country}/${normalizedDate}`;
-      console.log(`🔄 Envoi de la requête PUT à : ${url}`);
       
       try {
         const response = await fetch(url, {
@@ -296,7 +292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function applyFilters() {
     const countryFilter = document.getElementById("country").value.trim().toLowerCase();
     const omsFilter = document.getElementById("omsRegion").value.trim().toLowerCase();
-    const dateFilter = document.getElementById("date").value; // format YYYY-MM-DD
+    const dateFilter = document.getElementById("date").value;
   
     console.log("Filtres appliqués :", countryFilter, omsFilter, dateFilter);
   

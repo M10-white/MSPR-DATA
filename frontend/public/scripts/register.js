@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("registerForm");
     const errorMessage = document.getElementById("errorMessage");
 
+    if (!registerForm) {
+        console.error("Formulaire d'inscription introuvable !");
+        return;
+    }
+
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const formData = new FormData(registerForm);
@@ -31,9 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
             console.log("Inscription réussie :", result);
             alert("Inscription réussie ! Vous pouvez maintenant vous connecter.");
-            window.location.href = "index.html"; // Redirection vers la connexion
+            window.location.href = "index.html"; // Redirection vers la page de connexion
 
         } catch (error) {
+            console.error("Erreur lors de l'inscription :", error);
             errorMessage.textContent = error.message;
         }
     });

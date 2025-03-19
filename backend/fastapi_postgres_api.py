@@ -6,6 +6,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 import logging
 from fastapi.responses import JSONResponse
+import bcrypt
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -92,13 +93,15 @@ def get_all_users():
 
 @app.post("/users/")
 def create_user(user: User):
+    # Hachage du mot de passe
+    hashed_pw = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
     conn = get_db_connection()
     cursor = conn.cursor()
     
     cursor.execute("""
         INSERT INTO users (username, email, password) 
         VALUES (%s, %s, %s) RETURNING id;
-    """, (user.username, user.email, user.password))
+    """, (user.username, user.email, hashed_pw.decode('utf-8')))
     
     user_id = cursor.fetchone()[0]
     conn.commit()
@@ -267,8 +270,8 @@ def login(user: UserLogin):
     
     user_id, username, email, db_password = row
 
-    # Vérification du mot de passe (exemple simplifié, sans hachage)
-    if user.password != db_password:
+    # Vérification du mot de passe avec bcrypt
+    if not bcrypt.checkpw(user.password.encode('utf-8'), db_password.encode('utf-8')):
         raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
 
     # Si OK, on renvoie un message de succès ou un token
