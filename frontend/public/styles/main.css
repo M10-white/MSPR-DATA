@@ -218,7 +218,7 @@ header h1:hover {
   padding: 0.8rem;
   text-align: left;
 }
-.data-table th {
+.data-table th, .users-table th {
   background-color: var(--surface-1);
 }
 
@@ -226,6 +226,8 @@ header h1:hover {
 form input[type="text"],
 form input[type="date"],
 form input[type="number"],
+form input[type="password"],
+form input[type="email"],
 form select,
 form textarea {
   font-size: 1rem;                /* Taille de police standard */
@@ -284,14 +286,6 @@ form button:hover {
   background-color: var(--surface-1);
 }
 
-/* Footer spécifique */
-html, body {
-  height: 100%;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -305,4 +299,26 @@ html, body {
 #footer {
   background-color: #f8f8f8;
   text-align: center;
+}
+
+.logout-btn {
+  position: absolute;
+  right: 47%;
+  top: 3rem;
+  transform: translateY(-50%);
+  background-color: #ff6b6b;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #e63946;
+}
+
+.hidden {
+  display: none;
 }
