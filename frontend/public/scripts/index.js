@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await response.json();
         console.log("Connexion OK :", result);
         localStorage.setItem("access_token", result.access_token);
+        sessionStorage.setItem("user_id", result.user_id);
         window.location.href = "menu.html";
       } catch (error) {
         errorMessage.textContent = error.message;

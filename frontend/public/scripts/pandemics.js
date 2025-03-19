@@ -84,81 +84,127 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // === Fonction pour ouvrir le modal de modification avec le formulaire pré-rempli ===
-  function openUpdateModal(rowData) {
-    const updateModal = document.getElementById("updateModal");
-    if (!updateModal) {
-      console.error("Modal updateModal introuvable !");
-      return;
-    }
-    const updateFormModal = document.getElementById("updateFormModal");
-    if (!updateFormModal) {
-      console.error("Le formulaire updateFormModal est introuvable !");
-      return;
-    }
-    // Pré-remplissage des champs
-    updateFormModal.elements["country"].value = rowData.country;
-    updateFormModal.elements["date"].value = rowData.date;
-    updateFormModal.elements["cases"].value = rowData.cases;
-    updateFormModal.elements["deaths"].value = rowData.deaths;
-    updateFormModal.elements["recovered"].value = rowData.recovered;
-    updateFormModal.elements["active"].value = rowData.active;
-    updateFormModal.elements["latitude"].value = rowData.latitude || "";
-    updateFormModal.elements["longitude"].value = rowData.longitude || "";
-    updateFormModal.elements["who_region"].value = rowData.who_region || "";
-    updateFormModal.elements["mortality_rate"].value = rowData.mortality_rate || "";
-    updateFormModal.elements["recovery_rate"].value = rowData.recovery_rate || "";
+// --- Fonction pour charger les données avec anti-cache ---
+function fetchTableData() {
+  // Ajout d'un timestamp pour éviter le cache
+  fetch(`http://127.0.0.1:5000/data/1?ts=${Date.now()}`)
+    .then(response => response.json())
+    .then(data => {
+      allData = data;
+      filteredData = data;
+      if (!Array.isArray(allData)) {
+        console.error("La réponse n'est pas un tableau :", allData);
+        return;
+      }
+      if (allData.length === 0) {
+        document.querySelector("#data-table tbody").innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+        return;
+      }
+      console.log("Nouvelles données récupérées :", allData);
+      displayPage(1);
+    })
+    .catch(error => console.error("Erreur lors du chargement des données :", error));
+}
 
-    updateModal.classList.remove("hidden");
-
-    updateFormModal.onsubmit = function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const updatedData = Object.fromEntries(formData.entries());
-      // Conversion des valeurs numériques
-      updatedData.cases = parseInt(updatedData.cases);
-      updatedData.deaths = parseInt(updatedData.deaths);
-      updatedData.recovered = parseInt(updatedData.recovered);
-      updatedData.active = parseInt(updatedData.active);
-      if (updatedData.latitude) updatedData.latitude = parseFloat(updatedData.latitude);
-      if (updatedData.longitude) updatedData.longitude = parseFloat(updatedData.longitude);
-      if (updatedData.mortality_rate) updatedData.mortality_rate = parseFloat(updatedData.mortality_rate);
-      if (updatedData.recovery_rate) updatedData.recovery_rate = parseFloat(updatedData.recovery_rate);
-
-      // Construire l'URL pour l'update en utilisant user_id, country et date
-      const url = `http://127.0.0.1:5000/data/${rowData.user_id}/${rowData.country}/${rowData.date}`;
-      fetch(url, {
+// --- Fonction pour ouvrir le modal de modification ---
+function openUpdateModal(rowData) {
+  const updateModal = document.getElementById("updateModal");
+  if (!updateModal) {
+    console.error("Modal updateModal introuvable !");
+    return;
+  }
+  const updateFormModal = document.getElementById("updateFormModal");
+  if (!updateFormModal) {
+    console.error("Le formulaire updateFormModal est introuvable !");
+    return;
+  }
+  
+  // Pré-remplissage des champs avec gestion pour afficher 0 correctement
+  updateFormModal.elements["country"].value = rowData.country;
+  updateFormModal.elements["date"].value = rowData.date;
+  updateFormModal.elements["cases"].value = rowData.cases;
+  updateFormModal.elements["deaths"].value = rowData.deaths;
+  updateFormModal.elements["recovered"].value = rowData.recovered;
+  updateFormModal.elements["active"].value = rowData.active;
+  updateFormModal.elements["latitude"].value = (rowData.latitude !== null && rowData.latitude !== undefined) ? rowData.latitude : "";
+  updateFormModal.elements["longitude"].value = (rowData.longitude !== null && rowData.longitude !== undefined) ? rowData.longitude : "";
+  updateFormModal.elements["who_region"].value = rowData.who_region ? rowData.who_region : "";
+  updateFormModal.elements["mortality_rate"].value = (rowData.mortality_rate === 0 || rowData.mortality_rate) ? rowData.mortality_rate : "";
+  updateFormModal.elements["recovery_rate"].value = (rowData.recovery_rate === 0 || rowData.recovery_rate) ? rowData.recovery_rate : "";
+  
+  // Affichage du modal
+  updateModal.style.display = "flex";
+  updateModal.classList.remove("hidden");
+  setTimeout(() => {
+    updateModal.classList.add("active");
+  }, 10);
+  
+  // Gestion de la soumission du formulaire de modification
+  updateFormModal.onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(updateFormModal);
+    const updatedData = Object.fromEntries(formData.entries());
+    
+    // Conversion des valeurs numériques et gestion des champs vides
+    updatedData.cases = parseInt(updatedData.cases);
+    updatedData.deaths = parseInt(updatedData.deaths);
+    updatedData.recovered = parseInt(updatedData.recovered);
+    updatedData.active = parseInt(updatedData.active);
+    updatedData.latitude = updatedData.latitude.trim() === "" ? null : parseFloat(updatedData.latitude);
+    updatedData.longitude = updatedData.longitude.trim() === "" ? null : parseFloat(updatedData.longitude);
+    updatedData.mortality_rate = updatedData.mortality_rate.trim() === "" ? 0 : parseFloat(updatedData.mortality_rate);
+    updatedData.recovery_rate = updatedData.recovery_rate.trim() === "" ? 0 : parseFloat(updatedData.recovery_rate);
+    
+    // Récupération de l'user_id
+    const userId = sessionStorage.getItem("user_id");
+    // Normalisation de la date (YYYY-MM-DD)
+    const normalizedDate = new Date(rowData.date).toISOString().substring(0, 10);
+    const url = `http://127.0.0.1:5000/data/${rowData.id}/${rowData.country}/${normalizedDate}`;
+    console.log(`🔄 Envoi de la requête PUT à : ${url}`);
+    
+    try {
+      const response = await fetch(url, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData)
-      })
-      .then(res => res.json())
-      .then(result => {
-        alert("Donnée modifiée avec succès !");
-        fetchTableData();
-      })
-      .catch(err => {
-        console.error("Erreur lors de la modification :", err);
-        alert("Erreur lors de la modification !");
       });
-    };
-
-    const cancelBtn = document.getElementById("cancelUpdate");
-    if (cancelBtn) {
-      cancelBtn.onclick = function() {
+      if (!response.ok) throw new Error(await response.text());
+      alert("✅ Donnée mise à jour !");
+      updateModal.classList.remove("active");
+      setTimeout(() => {
         updateModal.classList.add("hidden");
-      };
-    } else {
-      console.error("Le bouton 'cancelUpdate' est introuvable !");
+        updateModal.style.display = "none";
+      }, 300);
+      // Rafraîchir le tableau après modification
+      fetchTableData();
+    } catch (err) {
+      console.error("🚨 Erreur lors de la modification :", err);
+      alert("⚠️ Échec de la modification !");
     }
+  };
+  
+  // Gestion du bouton "Annuler"
+  const cancelBtn = document.getElementById("cancelUpdate");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      console.log("❌ Annulation de la modification");
+      updateModal.classList.remove("active");
+      setTimeout(() => {
+        updateModal.classList.add("hidden");
+        updateModal.style.display = "none";
+      }, 300);
+    });
+  } else {
+    console.error("Le bouton 'cancelUpdate' est introuvable !");
   }
+}
 
   // === Pagination et affichage du tableau ===
   let allData = [];
   let currentPage = 1;
   const rowsPerPage = 10;
 
-  // Récupérer les données pour un user_id fixe (ici 1)
+  // Récupérer les données pour un user_id fixe (ici 3)
   function fetchTableData() {
     fetch("http://127.0.0.1:5000/data/1")
       .then(response => response.json())
@@ -244,41 +290,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Applique les filtres
   function applyFilters() {
     const countryFilter = document.getElementById("country").value;
     const omsFilter = document.getElementById("omsRegion").value;
     const dateFilter = document.getElementById("date").value;
-  
+
     console.log("Filtres appliqués :", countryFilter, omsFilter, dateFilter);
-  
+
     filteredData = allData.filter(row => {
       let match = true;
-  
+
       // Filtre par pays (en supprimant les espaces superflus)
       if (countryFilter !== "all") {
         match = match && row.country.toLowerCase().trim() === countryFilter.toLowerCase().trim();
       }
-  
+
       // Filtre par région OMS
       if (omsFilter !== "all") {
         match = match && row.who_region && row.who_region.toLowerCase().trim() === omsFilter.toLowerCase().trim();
       }
-  
-      // Filtre par date (normalisation de la date)
+
+      // Filtre par date (comparaison sur la partie date uniquement)
       if (dateFilter) {
-        // On convertit row.date en objet Date, puis on récupère le format ISO "YYYY-MM-DD"
-        const rowDate = new Date(row.date).toISOString().substring(0, 10);
+        const rowDate = row.date.substring(0, 10);
         match = match && rowDate === dateFilter;
       }
-  
+
       return match;
     });
-  
+
     console.log("Données filtrées :", filteredData);
     currentPage = 1; // Réinitialise la page à 1
     displayPage(currentPage);
   }
-  
 
   function waitForFilterElements() {
     const countrySelect = document.getElementById("country");
