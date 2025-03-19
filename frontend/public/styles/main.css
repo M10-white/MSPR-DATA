@@ -218,7 +218,7 @@ header h1:hover {
   padding: 0.8rem;
   text-align: left;
 }
-.data-table th {
+.data-table th, .users-table th {
   background-color: var(--surface-1);
 }
 

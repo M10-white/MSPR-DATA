@@ -286,6 +286,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
           }
         }
+
+        
+      // Fonction de filtrage
+      function applyUserFilters() {
+        const userIdFilter = document.getElementById("userIdFilter").value.trim().toLowerCase();
+        const usernameFilter = document.getElementById("usernameFilter").value.trim().toLowerCase();
+        const dateFilter = document.getElementById("dateCreatedFilter").value; // format YYYY-MM-DD
+
+        // On part de allUsers pour filtrer
+        filteredUsers = allUsers.filter(user => {
+          let match = true;
+
+          // Filtre par ID (saisie partielle possible, ex. taper "1" trouvera l'utilisateur ID=10)
+          if (userIdFilter !== "") {
+            // on compare en string
+            match = match && user.id.toString().includes(userIdFilter);
+          }
+
+          // Filtre par username (en minuscules)
+          if (usernameFilter !== "") {
+            match = match && user.username.toLowerCase().includes(usernameFilter);
+          }
+
+          // Filtre par date de création
+          if (dateFilter) {
+            // Convertir user.created_at en "YYYY-MM-DD"
+            const createdDate = new Date(user.created_at).toISOString().substring(0, 10);
+            match = match && createdDate === dateFilter;
+          }
+
+          return match;
+        });
+
+        // Mise à jour de l'affichage avec la liste filtrée
+        displayUsers(filteredUsers);
+      }
         
         // --- Gestion du formulaire d'ajout ---
         const addUserForm = document.getElementById("addUserForm");
@@ -518,6 +554,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     .catch(error => console.error("Erreur lors de l'ajout :", error));
   });
 
-  // Charger la liste des utilisateurs au démarrage
-  fetchUsers();
+let filteredUsers = [];
+
+// Exemple de fonction pour récupérer tous les utilisateurs
+function fetchUsers() {
+  fetch("http://127.0.0.1:5000/users/")
+    .then(res => res.json())
+    .then(data => {
+      allUsers = data;
+      filteredUsers = data; // Par défaut, pas de filtre
+      displayUsers(allUsers);
+    })
+    .catch(err => console.error("Erreur lors de la récupération des utilisateurs :", err));
+}
+
+// Fonction de filtrage
+function applyUserFilters() {
+  const userIdFilter = document.getElementById("userIdFilter").value.trim().toLowerCase();
+  const usernameFilter = document.getElementById("usernameFilter").value.trim().toLowerCase();
+  const dateFilter = document.getElementById("dateCreatedFilter").value; // format YYYY-MM-DD
+
+  // On part de allUsers pour filtrer
+  filteredUsers = allUsers.filter(user => {
+    let match = true;
+
+    // Filtre par ID (saisie partielle possible, ex. taper "1" trouvera l'utilisateur ID=10)
+    if (userIdFilter !== "") {
+      // on compare en string
+      match = match && user.id.toString().includes(userIdFilter);
+    }
+
+    // Filtre par username (en minuscules)
+    if (usernameFilter !== "") {
+      match = match && user.username.toLowerCase().includes(usernameFilter);
+    }
+
+    // Filtre par date de création
+    if (dateFilter) {
+      // Convertir user.created_at en "YYYY-MM-DD"
+      const createdDate = new Date(user.created_at).toISOString().substring(0, 10);
+      match = match && createdDate === dateFilter;
+    }
+
+    return match;
+  });
+
+  // Mise à jour de l'affichage avec la liste filtrée
+  displayUsers(filteredUsers);
+}
+
+// Fonction pour attacher les écouteurs "input" / "change"
+function attachUserFilterEvents() {
+  const idInput = document.getElementById("userIdFilter");
+  const usernameInput = document.getElementById("usernameFilter");
+  const dateInput = document.getElementById("dateCreatedFilter");
+
+  if (!idInput || !usernameInput || !dateInput) {
+    console.warn("⏳ Éléments de filtre non encore disponibles, nouvelle tentative...");
+    setTimeout(attachUserFilterEvents, 500);
+    return;
+  }
+
+  // "input" pour filtrer en direct quand on tape
+  idInput.addEventListener("input", applyUserFilters);
+  usernameInput.addEventListener("input", applyUserFilters);
+  // "change" pour la date (on peut aussi mettre "input")
+  dateInput.addEventListener("change", applyUserFilters);
+}
+
+    fetchUsers();
+    attachUserFilterEvents();
 });
+
