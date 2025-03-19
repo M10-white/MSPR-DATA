@@ -191,7 +191,6 @@ thead th:not(:last-child) {
     cursor: not-allowed;
   }
   
-  /* Cache le modal lorsque la classe 'hidden' est appliquée */
   .hidden {
     display: none;
   }

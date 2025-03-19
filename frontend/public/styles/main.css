@@ -318,3 +318,7 @@ form button:hover {
 .logout-btn:hover {
   background-color: #e63946;
 }
+
+.hidden {
+  display: none;
+}

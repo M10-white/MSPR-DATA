@@ -3,6 +3,7 @@
     <div class="filter-bar">
         <!-- FilterBar sera injecté ici -->
     </div>
+    
     <h2>Ajouter un Utilisateur</h2>
     <form id="addUserForm">
         <input type="text" name="username" placeholder="Nom d'utilisateur" required />
@@ -10,8 +11,54 @@
         <input type="password" name="password" placeholder="Mot de passe" required />
         <button type="submit">Ajouter</button>
     </form>
+
+
+  <!-- Modal d'options sur une ligne utilisateur -->
+  <div id="userOptionsModal" class="popup hidden">
+    <div class="popup-content">
+      <h3>Détails de l'utilisateur</h3>
+      <p id="userDetails"></p>
+      <div class="modal-buttons">
+        <button id="btnUpdateUser">Modifier</button>
+        <button id="btnDeleteUser">Supprimer</button>
+        <button id="btnCancelUser">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de modification d'un utilisateur -->
+  <div id="updateUserModal" class="popup hidden">
+    <div class="popup-content">
+      <h3>Modifier l'utilisateur</h3>
+      <form id="updateUserFormModal">
+        <!-- Champ caché pour l'ID si nécessaire -->
+        <input type="hidden" name="id">
+        <input type="text" name="username" placeholder="" required />
+        <input type="email" name="email" required />
+        <input type="password" name="password" required />
+        <div class="modal-buttons">
+          <button type="submit">Modifier</button>
+          <button type="button" id="cancelUserUpdate">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de suppression d'un utilisateur -->
+  <div id="deleteUserModal" class="popup hidden">
+    <div class="popup-content">
+      <h3>Supprimer l'utilisateur</h3>
+      <p id="deleteUserDetails">Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+      <div class="modal-buttons">
+        <button id="confirmUserDelete">Confirmer</button>
+        <button id="cancelUserDelete">Annuler</button>
+      </div>
+    </div>
+  </div>
+
     <h2>Liste des Utilisateurs</h2>
     <div class="users-table" id="table-wrapper">
         <!-- Composant Table sera injecté ici -->
     </div>
+    
 </section>

@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("✅ Tous les composants sont chargés !");
   console.log("🚀 Recherche du tableau...");
 
-  // === Gestion du modal pour les options sur une ligne ===
+  // --- Gestion du modal pour les options sur une ligne ---
   function openRowOptions(rowData) {
     const modal = document.getElementById("rowOptionsModal");
     if (!modal) {
@@ -84,122 +84,119 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-// --- Fonction pour charger les données avec anti-cache ---
-function fetchTableData() {
-  // Ajout d'un timestamp pour éviter le cache
-  fetch(`http://127.0.0.1:5000/data/1?ts=${Date.now()}`)
-    .then(response => response.json())
-    .then(data => {
-      allData = data;
-      filteredData = data;
-      if (!Array.isArray(allData)) {
-        console.error("La réponse n'est pas un tableau :", allData);
-        return;
-      }
-      if (allData.length === 0) {
-        document.querySelector("#data-table tbody").innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
-        return;
-      }
-      console.log("Nouvelles données récupérées :", allData);
-      displayPage(1);
-    })
-    .catch(error => console.error("Erreur lors du chargement des données :", error));
-}
+  // --- Fonction pour charger les données avec anti-cache ---
+  function fetchTableData() {
+    // Ajout d'un timestamp pour éviter le cache
+    fetch(`http://127.0.0.1:5000/data/1?ts=${Date.now()}`)
+      .then(response => response.json())
+      .then(data => {
+        allData = data.sort((a, b) => b.id - a.id);
+        filteredData = allData;
+        if (!Array.isArray(allData)) {
+          console.error("La réponse n'est pas un tableau :", allData);
+          return;
+        }
+        if (allData.length === 0) {
+          document.querySelector("#data-table tbody").innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
+          return;
+        }
+        currentPage = 1;
+        displayPage(1);
+      })
+      .catch(error => console.error("Erreur lors du chargement des données :", error));
+  }
 
-// --- Fonction pour ouvrir le modal de modification ---
-function openUpdateModal(rowData) {
-  const updateModal = document.getElementById("updateModal");
-  if (!updateModal) {
-    console.error("Modal updateModal introuvable !");
-    return;
-  }
-  const updateFormModal = document.getElementById("updateFormModal");
-  if (!updateFormModal) {
-    console.error("Le formulaire updateFormModal est introuvable !");
-    return;
-  }
-  
-  // Pré-remplissage des champs avec gestion pour afficher 0 correctement
-  updateFormModal.elements["country"].value = rowData.country;
-  updateFormModal.elements["date"].value = rowData.date;
-  updateFormModal.elements["cases"].value = rowData.cases;
-  updateFormModal.elements["deaths"].value = rowData.deaths;
-  updateFormModal.elements["recovered"].value = rowData.recovered;
-  updateFormModal.elements["active"].value = rowData.active;
-  updateFormModal.elements["latitude"].value = (rowData.latitude !== null && rowData.latitude !== undefined) ? rowData.latitude : "";
-  updateFormModal.elements["longitude"].value = (rowData.longitude !== null && rowData.longitude !== undefined) ? rowData.longitude : "";
-  updateFormModal.elements["who_region"].value = rowData.who_region ? rowData.who_region : "";
-  updateFormModal.elements["mortality_rate"].value = (rowData.mortality_rate === 0 || rowData.mortality_rate) ? rowData.mortality_rate : "";
-  updateFormModal.elements["recovery_rate"].value = (rowData.recovery_rate === 0 || rowData.recovery_rate) ? rowData.recovery_rate : "";
-  
-  // Affichage du modal
-  updateModal.style.display = "flex";
-  updateModal.classList.remove("hidden");
-  setTimeout(() => {
-    updateModal.classList.add("active");
-  }, 10);
-  
-  // Gestion de la soumission du formulaire de modification
-  updateFormModal.onsubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(updateFormModal);
-    const updatedData = Object.fromEntries(formData.entries());
-    
-    // Conversion des valeurs numériques et gestion des champs vides
-    updatedData.cases = parseInt(updatedData.cases);
-    updatedData.deaths = parseInt(updatedData.deaths);
-    updatedData.recovered = parseInt(updatedData.recovered);
-    updatedData.active = parseInt(updatedData.active);
-    updatedData.latitude = updatedData.latitude.trim() === "" ? null : parseFloat(updatedData.latitude);
-    updatedData.longitude = updatedData.longitude.trim() === "" ? null : parseFloat(updatedData.longitude);
-    updatedData.mortality_rate = updatedData.mortality_rate.trim() === "" ? 0 : parseFloat(updatedData.mortality_rate);
-    updatedData.recovery_rate = updatedData.recovery_rate.trim() === "" ? 0 : parseFloat(updatedData.recovery_rate);
-    
-    // Récupération de l'user_id
-    const userId = sessionStorage.getItem("user_id");
-    // Normalisation de la date (YYYY-MM-DD)
-    const normalizedDate = new Date(rowData.date).toISOString().substring(0, 10);
-    const url = `http://127.0.0.1:5000/data/${rowData.id}/${rowData.country}/${normalizedDate}`;
-    console.log(`🔄 Envoi de la requête PUT à : ${url}`);
-    
-    try {
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData)
-      });
-      if (!response.ok) throw new Error(await response.text());
-      alert("✅ Donnée mise à jour !");
-      updateModal.classList.remove("active");
-      setTimeout(() => {
-        updateModal.classList.add("hidden");
-        updateModal.style.display = "none";
-      }, 300);
-      // Rafraîchir le tableau après modification
-      fetchTableData();
-    } catch (err) {
-      console.error("🚨 Erreur lors de la modification :", err);
-      alert("⚠️ Échec de la modification !");
+  // --- Fonction pour ouvrir le modal de modification ---
+  function openUpdateModal(rowData) {
+    const updateModal = document.getElementById("updateModal");
+    if (!updateModal) {
+      console.error("Modal updateModal introuvable !");
+      return;
     }
-  };
-  
-  // Gestion du bouton "Annuler"
-  const cancelBtn = document.getElementById("cancelUpdate");
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", () => {
-      console.log("❌ Annulation de la modification");
-      updateModal.classList.remove("active");
-      setTimeout(() => {
-        updateModal.classList.add("hidden");
-        updateModal.style.display = "none";
-      }, 300);
-    });
-  } else {
-    console.error("Le bouton 'cancelUpdate' est introuvable !");
+    const updateFormModal = document.getElementById("updateFormModal");
+    if (!updateFormModal) {
+      console.error("Le formulaire updateFormModal est introuvable !");
+      return;
+    }
+    
+    // Pré-remplissage des champs avec gestion pour afficher 0 correctement
+    updateFormModal.elements["country"].value = rowData.country;
+    updateFormModal.elements["date"].value = rowData.date;
+    updateFormModal.elements["cases"].value = rowData.cases;
+    updateFormModal.elements["deaths"].value = rowData.deaths;
+    updateFormModal.elements["recovered"].value = rowData.recovered;
+    updateFormModal.elements["active"].value = rowData.active;
+    updateFormModal.elements["latitude"].value = (rowData.latitude !== null && rowData.latitude !== undefined) ? rowData.latitude : "";
+    updateFormModal.elements["longitude"].value = (rowData.longitude !== null && rowData.longitude !== undefined) ? rowData.longitude : "";
+    updateFormModal.elements["who_region"].value = rowData.who_region ? rowData.who_region : "";
+    updateFormModal.elements["mortality_rate"].value = (rowData.mortality_rate === 0 || rowData.mortality_rate) ? rowData.mortality_rate : "";
+    updateFormModal.elements["recovery_rate"].value = (rowData.recovery_rate === 0 || rowData.recovery_rate) ? rowData.recovery_rate : "";
+    
+    // Affichage du modal
+    updateModal.style.display = "flex";
+    updateModal.classList.remove("hidden");
+    setTimeout(() => {
+      updateModal.classList.add("active");
+    }, 10);
+    
+    updateFormModal.onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(updateFormModal);
+      const updatedData = Object.fromEntries(formData.entries());
+      
+      // Conversion des valeurs numériques et gestion des champs vides
+      updatedData.cases = parseInt(updatedData.cases);
+      updatedData.deaths = parseInt(updatedData.deaths);
+      updatedData.recovered = parseInt(updatedData.recovered);
+      updatedData.active = parseInt(updatedData.active);
+      updatedData.latitude = updatedData.latitude.trim() === "" ? null : parseFloat(updatedData.latitude);
+      updatedData.longitude = updatedData.longitude.trim() === "" ? null : parseFloat(updatedData.longitude);
+      updatedData.mortality_rate = updatedData.mortality_rate.trim() === "" ? 0 : parseFloat(updatedData.mortality_rate);
+      updatedData.recovery_rate = updatedData.recovery_rate.trim() === "" ? 0 : parseFloat(updatedData.recovery_rate);
+      
+      // Récupération de l'user_id
+      const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
+      // Normalisation de la date (YYYY-MM-DD)
+      const normalizedDate = new Date(rowData.date).toISOString().substring(0, 10);
+      const url = `http://127.0.0.1:5000/data/${userId}/${rowData.country}/${normalizedDate}`;
+      console.log(`🔄 Envoi de la requête PUT à : ${url}`);
+      
+      try {
+        const response = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedData)
+        });
+        if (!response.ok) throw new Error(await response.text());
+        alert("✅ Donnée mise à jour !");
+        updateModal.classList.remove("active");
+        setTimeout(() => {
+          updateModal.classList.add("hidden");
+          updateModal.style.display = "none";
+        }, 300);
+        fetchTableData();
+      } catch (err) {
+        console.error("🚨 Erreur lors de la modification :", err);
+        alert("⚠️ Échec de la modification !");
+      }
+    };
+    
+    const cancelBtn = document.getElementById("cancelUpdate");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => {
+        console.log("❌ Annulation de la modification");
+        updateModal.classList.remove("active");
+        setTimeout(() => {
+          updateModal.classList.add("hidden");
+          updateModal.style.display = "none";
+        }, 300);
+      });
+    } else {
+      console.error("Le bouton 'cancelUpdate' est introuvable !");
+    }
   }
-}
 
-  // === Pagination et affichage du tableau ===
+  // --- Pagination et affichage du tableau ---
   let allData = [];
   let currentPage = 1;
   const rowsPerPage = 10;
@@ -230,7 +227,8 @@ function openUpdateModal(rowData) {
     tableBody.innerHTML = "";
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
-    const pageData = allData.slice(start, end);
+    // IMPORTANT : utiliser filteredData pour afficher les données filtrées
+    const pageData = filteredData.slice(start, end);
     if (pageData.length === 0) {
       tableBody.innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
       return;
@@ -256,7 +254,7 @@ function openUpdateModal(rowData) {
       });
       tableBody.appendChild(tr);
     });
-    const totalPages = Math.ceil(allData.length / rowsPerPage);
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     const pageInfo = document.querySelector("#pageInfo");
     if (pageInfo) {
       pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
@@ -270,6 +268,8 @@ function openUpdateModal(rowData) {
       nextBtn.style.display = currentPage === totalPages ? "none" : "block";
     }
   }
+
+  fetchTableData();
 
   function waitForPaginationElements() {
     const prevBtn = document.querySelector("#prevPage");
@@ -285,81 +285,72 @@ function openUpdateModal(rowData) {
       }
     });
     nextBtn.addEventListener("click", () => {
-      if (currentPage < Math.ceil(allData.length / rowsPerPage)) {
+      if (currentPage < Math.ceil(filteredData.length / rowsPerPage)) {
         currentPage++;
         displayPage(currentPage);
       }
     });
   }
+  waitForPaginationElements();
 
-  // Applique les filtres
   function applyFilters() {
     const countryFilter = document.getElementById("country").value.trim().toLowerCase();
     const omsFilter = document.getElementById("omsRegion").value.trim().toLowerCase();
-    const dateFilter = document.getElementById("date").value;
+    const dateFilter = document.getElementById("date").value; // format YYYY-MM-DD
   
     console.log("Filtres appliqués :", countryFilter, omsFilter, dateFilter);
   
     filteredData = allData.filter(row => {
       let match = true;
-  
-      // Filtre par pays : vérifie si la valeur saisie est incluse dans row.country
       if (countryFilter !== "") {
-        match = match && row.country.toLowerCase().includes(countryFilter);
+        match = match && row.country.toLowerCase().trim().includes(countryFilter);
       }
-  
-      // Filtre par région OMS : vérifie si la valeur saisie est incluse dans row.who_region
       if (omsFilter !== "") {
-        // S'assurer que row.who_region existe
-        match = match && row.who_region && row.who_region.toLowerCase().includes(omsFilter);
+        match = match && row.who_region && row.who_region.toLowerCase().trim().includes(omsFilter);
       }
-  
-      // Filtre par date (normalisation de la date si nécessaire)
       if (dateFilter) {
-        // On suppose que row.date est au format "YYYY-MM-DD" ou qu'on peut le normaliser
         const rowDate = new Date(row.date).toISOString().substring(0, 10);
         match = match && rowDate === dateFilter;
       }
-  
       return match;
     });
   
     console.log("Données filtrées :", filteredData);
-    currentPage = 1; // Réinitialise la page
+    currentPage = 1;
     displayPage(currentPage);
-  }  
-
+  }
+  
   function waitForFilterElements() {
-    const countrySelect = document.getElementById("country");
-    const omsSelect = document.getElementById("omsRegion");
+    const countryInput = document.getElementById("country");
+    const omsInput = document.getElementById("omsRegion");
     const dateInput = document.getElementById("date");
-
-    if (!countrySelect || !omsSelect || !dateInput) {
+  
+    if (!countryInput || !omsInput || !dateInput) {
       console.warn("⏳ Éléments de filtre non encore disponibles, nouvelle tentative...");
       setTimeout(waitForFilterElements, 500);
       return;
     }
-
-    // Une fois trouvés, on attache les écouteurs
-    countrySelect.addEventListener("change", applyFilters);
-    omsSelect.addEventListener("change", applyFilters);
-    dateInput.addEventListener("change", applyFilters);
-
-    // Appliquer immédiatement les filtres si besoin
-    applyFilters();
+  
+    countryInput.addEventListener("input", () => {
+      console.log("Valeur du filtre pays :", countryInput.value);
+      applyFilters();
+    });
+    omsInput.addEventListener("input", () => {
+      console.log("Valeur du filtre région OMS :", omsInput.value);
+      applyFilters();
+    });
+    dateInput.addEventListener("change", () => {
+      console.log("Valeur du filtre date :", dateInput.value);
+      applyFilters();
+    });
   }
-
-  // Charger le tableau au démarrage
-  fetchTableData();
-  waitForPaginationElements();
   waitForFilterElements();
-
-  // === Gestion du formulaire d'ajout ===
+  
+  // --- Gestion du formulaire d'ajout ---
   document.getElementById("addForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
-    // Conversion des valeurs numériques
     data.cases = parseInt(data.cases);
     data.deaths = parseInt(data.deaths);
     data.recovered = parseInt(data.recovered);
