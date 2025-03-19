@@ -204,12 +204,13 @@ function openUpdateModal(rowData) {
   let currentPage = 1;
   const rowsPerPage = 10;
 
-  // Récupérer les données pour un user_id fixe (ici 3)
+  // Récupérer les données pour un user_id fixe (ici 1)
   function fetchTableData() {
     fetch("http://127.0.0.1:5000/data/1")
       .then(response => response.json())
       .then(data => {
-        allData = data;
+        allData = data.sort((a, b) => b.id - a.id);
+        filteredData = allData;
         if (!Array.isArray(allData)) {
           console.error("La réponse n'est pas un tableau :", allData);
           return;
@@ -218,6 +219,7 @@ function openUpdateModal(rowData) {
           document.querySelector("#data-table tbody").innerHTML = "<tr><td colspan='11'>Aucune donnée disponible</td></tr>";
           return;
         }
+        currentPage = 1;
         displayPage(1);
       })
       .catch(error => console.error("Erreur lors du chargement des données :", error));
@@ -292,38 +294,40 @@ function openUpdateModal(rowData) {
 
   // Applique les filtres
   function applyFilters() {
-    const countryFilter = document.getElementById("country").value;
-    const omsFilter = document.getElementById("omsRegion").value;
+    const countryFilter = document.getElementById("country").value.trim().toLowerCase();
+    const omsFilter = document.getElementById("omsRegion").value.trim().toLowerCase();
     const dateFilter = document.getElementById("date").value;
-
+  
     console.log("Filtres appliqués :", countryFilter, omsFilter, dateFilter);
-
+  
     filteredData = allData.filter(row => {
       let match = true;
-
-      // Filtre par pays (en supprimant les espaces superflus)
-      if (countryFilter !== "all") {
-        match = match && row.country.toLowerCase().trim() === countryFilter.toLowerCase().trim();
+  
+      // Filtre par pays : vérifie si la valeur saisie est incluse dans row.country
+      if (countryFilter !== "") {
+        match = match && row.country.toLowerCase().includes(countryFilter);
       }
-
-      // Filtre par région OMS
-      if (omsFilter !== "all") {
-        match = match && row.who_region && row.who_region.toLowerCase().trim() === omsFilter.toLowerCase().trim();
+  
+      // Filtre par région OMS : vérifie si la valeur saisie est incluse dans row.who_region
+      if (omsFilter !== "") {
+        // S'assurer que row.who_region existe
+        match = match && row.who_region && row.who_region.toLowerCase().includes(omsFilter);
       }
-
-      // Filtre par date (comparaison sur la partie date uniquement)
+  
+      // Filtre par date (normalisation de la date si nécessaire)
       if (dateFilter) {
-        const rowDate = row.date.substring(0, 10);
+        // On suppose que row.date est au format "YYYY-MM-DD" ou qu'on peut le normaliser
+        const rowDate = new Date(row.date).toISOString().substring(0, 10);
         match = match && rowDate === dateFilter;
       }
-
+  
       return match;
     });
-
+  
     console.log("Données filtrées :", filteredData);
-    currentPage = 1; // Réinitialise la page à 1
+    currentPage = 1; // Réinitialise la page
     displayPage(currentPage);
-  }
+  }  
 
   function waitForFilterElements() {
     const countrySelect = document.getElementById("country");
@@ -345,12 +349,10 @@ function openUpdateModal(rowData) {
     applyFilters();
   }
 
-  waitForFilterElements();
-
-
   // Charger le tableau au démarrage
   fetchTableData();
   waitForPaginationElements();
+  waitForFilterElements();
 
   // === Gestion du formulaire d'ajout ===
   document.getElementById("addForm").addEventListener("submit", function(e) {
