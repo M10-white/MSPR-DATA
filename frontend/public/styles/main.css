@@ -218,7 +218,7 @@ header h1:hover {
   padding: 0.8rem;
   text-align: left;
 }
-.data-table th {
+.data-table th, .users-table th {
   background-color: var(--surface-1);
 }
 
@@ -226,6 +226,8 @@ header h1:hover {
 form input[type="text"],
 form input[type="date"],
 form input[type="number"],
+form input[type="password"],
+form input[type="email"],
 form select,
 form textarea {
   font-size: 1rem;                /* Taille de police standard */
@@ -315,4 +317,8 @@ form button:hover {
 
 .logout-btn:hover {
   background-color: #e63946;
+}
+
+.hidden {
+  display: none;
 }

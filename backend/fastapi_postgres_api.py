@@ -6,6 +6,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 import logging
 from fastapi.responses import JSONResponse
+import bcrypt
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -70,15 +71,37 @@ class PandemicUpdate(BaseModel):
     recovery_rate: Optional[float] = None
 
 # 💌 CRUD pour Users
+@app.get("/users/")
+def get_all_users():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email, password, created_at FROM users")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    users = []
+    for r in rows:
+        users.append({
+            "id": r[0],
+            "username": r[1],
+            "email": r[2],
+            "password": r[3],
+            "created_at": r[4]
+        })
+    return users
+
 @app.post("/users/")
 def create_user(user: User):
+    # Hachage du mot de passe
+    hashed_pw = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
     conn = get_db_connection()
     cursor = conn.cursor()
     
     cursor.execute("""
         INSERT INTO users (username, email, password) 
         VALUES (%s, %s, %s) RETURNING id;
-    """, (user.username, user.email, user.password))
+    """, (user.username, user.email, hashed_pw.decode('utf-8')))
     
     user_id = cursor.fetchone()[0]
     conn.commit()
@@ -137,6 +160,30 @@ def delete_user(user_id: int):
     cursor.close()
     conn.close()
     return {"message": "✅ Utilisateur supprimé avec succès"}
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, updated_user: User):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Vérifie que l'utilisateur existe
+    cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+    if cursor.fetchone() is None:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Met à jour l'utilisateur
+    cursor.execute("""
+        UPDATE users
+        SET username = %s,
+            email = %s,
+            password = %s
+        WHERE id = %s
+    """, (updated_user.username, updated_user.email, updated_user.password, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur mis à jour avec succès"}
 
 # 💌 CRUD pour PandemicData
 @app.get("/data/{user_id}")
@@ -251,8 +298,8 @@ def login(user: UserLogin):
     
     user_id, username, email, db_password = row
 
-    # Vérification du mot de passe (exemple simplifié, sans hachage)
-    if user.password != db_password:
+    # Vérification du mot de passe avec bcrypt
+    if not bcrypt.checkpw(user.password.encode('utf-8'), db_password.encode('utf-8')):
         raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
 
     # Si OK, on renvoie un message de succès ou un token

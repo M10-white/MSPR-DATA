@@ -218,19 +218,14 @@ thead th:not(:last-child) {
 
 .popup-content button:focus {
     outline: none;
-}
-
-.popup-content button.cancel {
-    background-color: #ccc;
-    color: #333;
-}
-
-.popup-content button.cancel:hover {
-    background-color: #aaa;
-}
-
-/* Cache le modal lorsque la classe 'hidden' est appliquée */
-.hidden {
+  }
+  
+  .popup-content button:disabled {
+    background-color: var(--surface-3);
+    cursor: not-allowed;
+  }
+  
+  .hidden {
     display: none;
 }
 

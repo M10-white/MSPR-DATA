@@ -19,6 +19,7 @@
     <div class="crud-container">
         <h2>Ajouter une nouvelle donnée</h2>
         <form id="addForm">
+            <input type="hidden" name="user_id" value="1">
             <input type="text" name="country" placeholder="Pays" required>
             <input type="date" name="date" required>
             <input type="number" name="cases" placeholder="Cas" required>
@@ -64,22 +65,34 @@
         <button id="nextPage">Suivant ▶</button>
     </div>
 
+    <!-- Modal pour les options sur une ligne (déjà présent) -->
+    <div id="rowOptionsModal" class="popup hidden">
+        <div class="popup-content">
+        <h3>Options pour cette donnée</h3>
+        <p id="rowDetails"></p>
+        <button id="btnUpdateRow">Modifier</button>
+        <button id="btnDeleteRow">Supprimer</button>
+        <button id="btnCancelRow">Annuler</button>
+        </div>
+    </div>
+    
+    <!-- Modal pour la modification -->
     <div id="updateModal" class="popup hidden">
         <div class="popup-content">
             <h3>Modifier la donnée</h3>
             <form id="updateFormModal">
-                <input type="hidden" name="id">
-                <input type="text" name="country" readonly>
-                <input type="date" name="date" readonly>
-                <input type="number" name="cases" required>
-                <input type="number" name="deaths" required>
-                <input type="number" name="recovered" required>
-                <input type="number" name="active" required>
-                <input type="number" step="any" name="latitude">
-                <input type="number" step="any" name="longitude">
-                <input type="text" name="who_region">
-                <input type="number" step="any" name="mortality_rate">
-                <input type="number" step="any" name="recovery_rate">
+                <input type="hidden" name="user_id" value="1">
+                <input type="text" name="country" placeholder="Pays" readonly>
+                <input type="date" name="date" placeholder="Date" readonly>
+                <input type="number" name="cases" placeholder="Cas" required>
+                <input type="number" name="deaths" placeholder="Décès" required>
+                <input type="number" name="recovered" placeholder="Rétablis" required>
+                <input type="number" name="active" placeholder="Actifs" required>
+                <input type="number" step="any" name="latitude" placeholder="Latitude">
+                <input type="number" step="any" name="longitude" placeholder="Longitude">
+                <input type="text" name="who_region" placeholder="Région OMS">
+                <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
+                <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
                 <br>
                 <button type="submit">Enregistrer</button>
                 <button type="button" id="cancelUpdate">Annuler</button>
