@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("user_id");
+  const token = localStorage.getItem("acess_token");
   const logoutBtn = document.getElementById("logoutBtn");
   if (token && logoutBtn) {
     logoutBtn.style.display = "block";
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       console.log("Bouton de déconnexion cliqué");
-      localStorage.removeItem("user_id");
+      localStorage.removeItem("acess_token");
       window.location.href = "index.html";
     });
   }

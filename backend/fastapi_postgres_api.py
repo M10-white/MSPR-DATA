@@ -36,7 +36,7 @@ def get_db_connection():
 
 # 💌 Modèle Pydantic pour la validation des entrées
 class PandemicData(BaseModel):
-    user_id: int  # Ajout de la relation avec l'utilisateur
+    user_id: int
     country: str
     date: str
     cases: int
