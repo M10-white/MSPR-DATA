@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Inscription - BAAI</title>
+  <link rel="stylesheet" href="styles/index.css">
+  <link rel="icon" type="image/x-icon" href="assets/icons/favicon.png">
+  <link rel="stylesheet" href="styles/main.css">
+  <script src="scripts/register.js" defer></script>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Inscription</h2>
+    <form id="registerForm">
+      <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Mot de passe" required>
+      <input type="password" name="confirm_password" placeholder="Confirmer le mot de passe" required>
+      <button type="submit">S'inscrire</button>
+    </form>
+    <p id="errorMessage" class="error-message"></p>
+    <p class="register-link">Déjà un compte ? <a href="index.html">Connectez-vous ici</a></p>
+  </div>
+</body>
+</html>

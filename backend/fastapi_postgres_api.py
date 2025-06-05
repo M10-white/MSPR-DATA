@@ -1,0 +1,319 @@
+from fastapi import FastAPI, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import psycopg2
+import pandas as pd
+from typing import Optional
+from pydantic import BaseModel, EmailStr
+import logging
+from fastapi.responses import JSONResponse
+import bcrypt
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Autorise toutes les origines
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],  # ← Ajoute ça pour voir si ça règle le souci
+)
+
+
+# 💌 Connexion à la base de données PostgreSQL
+DATABASE_URL = "dbname=pandemics user=postgres password=admin host=localhost port=5432"
+
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+# 💌 Modèle Pydantic pour la validation des entrées
+class PandemicData(BaseModel):
+    user_id: int  # Ajout de la relation avec l'utilisateur
+    country: str
+    date: str
+    cases: int
+    deaths: int
+    recovered: int
+    active: int
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    who_region: Optional[str] = None
+    mortality_rate: Optional[float] = None
+    recovery_rate: Optional[float] = None
+
+class User(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+
+class PandemicUpdate(BaseModel):
+    cases: Optional[int] = None
+    deaths: Optional[int] = None
+    recovered: Optional[int] = None
+    active: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    who_region: Optional[str] = None
+    mortality_rate: Optional[float] = None
+    recovery_rate: Optional[float] = None
+
+# 💌 CRUD pour Users
+@app.get("/users/")
+def get_all_users():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email, password, created_at FROM users")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    users = []
+    for r in rows:
+        users.append({
+            "id": r[0],
+            "username": r[1],
+            "email": r[2],
+            "password": r[3],
+            "created_at": r[4]
+        })
+    return users
+
+@app.post("/users/")
+def create_user(user: User):
+    # Hachage du mot de passe
+    hashed_pw = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        INSERT INTO users (username, email, password) 
+        VALUES (%s, %s, %s) RETURNING id;
+    """, (user.username, user.email, hashed_pw.decode('utf-8')))
+    
+    user_id = cursor.fetchone()[0]
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur créé avec succès", "user_id": user_id}
+
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    return {"id": user[0], "username": user[1], "email": user[2]}
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, user_update: UserUpdate):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    update_fields = []
+    params = []
+    
+    if user_update.username:
+        update_fields.append("username = %s")
+        params.append(user_update.username)
+    if user_update.email:
+        update_fields.append("email = %s")
+        params.append(user_update.email)
+    if user_update.password:
+        update_fields.append("password = %s")
+        params.append(user_update.password)
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
+    
+    params.append(user_id)
+    query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s"
+    cursor.execute(query, tuple(params))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur mis à jour avec succès"}
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur supprimé avec succès"}
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, updated_user: User):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Vérifie que l'utilisateur existe
+    cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+    if cursor.fetchone() is None:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Met à jour l'utilisateur
+    cursor.execute("""
+        UPDATE users
+        SET username = %s,
+            email = %s,
+            password = %s
+        WHERE id = %s
+    """, (updated_user.username, updated_user.email, updated_user.password, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Utilisateur mis à jour avec succès"}
+
+# 💌 CRUD pour PandemicData
+@app.get("/data/{user_id}")
+def get_data(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, country, latitude, longitude, date, cases, deaths, recovered, active, who_region, mortality_rate, recovery_rate 
+        FROM pandemic_data
+        WHERE user_id = %s
+    """, (user_id,))
+    
+    rows = cursor.fetchall()
+
+    # Vérifier si des données existent pour cet utilisateur
+    if not rows:
+        raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour cet utilisateur")
+
+    # Récupérer les noms de colonnes
+    colnames = [desc[0] for desc in cursor.description]
+
+    cursor.close()
+    conn.close()
+
+    # Transformer en JSON propre
+    result = [dict(zip(colnames, row)) for row in rows]
+
+    return result  # FastAPI convertira automatiquement en JSON
+
+
+@app.post("/data/")
+def add_data(entry: PandemicData):
+    import logging
+    from fastapi.encoders import jsonable_encoder
+
+    logging.debug(f"📥 Données reçues : {jsonable_encoder(entry)}")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO pandemic_data (user_id, country, date, cases, deaths, recovered, active, latitude, longitude, who_region, mortality_rate, recovery_rate)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (entry.user_id, entry.country, entry.date, entry.cases, entry.deaths, entry.recovered, entry.active, entry.latitude, entry.longitude, entry.who_region, entry.mortality_rate, entry.recovery_rate))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"message": "✅ Données insérées avec succès"}
+    
+    except Exception as e:
+        logging.error(f"🚨 Erreur lors de l'ajout : {str(e)}")
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
+@app.put("/data/{user_id}/{country}/{date}")
+def update_data(user_id: int, country: str, date: str, data_update: PandemicUpdate):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    update_fields = []
+    params = []
+    
+    for field, value in data_update.dict(exclude_unset=True).items():
+        update_fields.append(f"{field} = %s")
+        params.append(value)
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
+    
+    params.extend([user_id, country, date])
+    query = f"""
+        UPDATE pandemic_data SET {', '.join(update_fields)}
+        WHERE user_id = %s AND country = %s AND date = %s
+    """
+    cursor.execute(query, tuple(params))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Données mises à jour avec succès"}
+
+@app.delete("/data/{id}")
+def delete_data(id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM pandemic_data WHERE id = %s", (id,))
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Donnée non trouvée")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "✅ Donnée supprimée avec succès"}
+
+
+@app.post("/login")
+def login(user: UserLogin):
+    """
+    Vérifie si l'email et le mot de passe correspondent à un user en base.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Récupérer l'utilisateur via son email
+    cursor.execute("SELECT id, username, email, password FROM users WHERE email = %s", (user.email,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not row:
+        # Aucun user avec cet email
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
+    
+    user_id, username, email, db_password = row
+
+    # Vérification du mot de passe avec bcrypt
+    if not bcrypt.checkpw(user.password.encode('utf-8'), db_password.encode('utf-8')):
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
+
+    # Si OK, on renvoie un message de succès ou un token
+    return {
+        "message": "Connexion réussie !",
+        "user_id": user_id,
+        "username": username
+    }
+
+@app.get("/test_connection/")
+def test_connection():
+    try:
+        conn = get_db_connection()
+        conn.close()
+        return {"status": "✅ Connexion réussie à PostgreSQL"}
+    except Exception as e:
+        return {"status": "❌ Échec de connexion", "error": str(e)}

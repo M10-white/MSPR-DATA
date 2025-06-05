@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Pandémies</title>
+    
+    <!-- Ajout des bons fichiers CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+
+<section id="dashboard-pandemics" class="dashboard">
+    <div class="filter-bar" id="filter-bar">
+        <!-- La barre de filtre sera injectée ici -->
+    </div>
+
+    <div class="crud-container">
+        <h2>Ajouter une nouvelle donnée</h2>
+        <form id="addForm">
+            <input type="hidden" name="user_id" value="1">
+            <input type="text" name="country" placeholder="Pays" required>
+            <input type="date" name="date" required>
+            <input type="number" name="cases" placeholder="Cas" required>
+            <input type="number" name="deaths" placeholder="Décès" required>
+            <input type="number" name="recovered" placeholder="Rétablis" required>
+            <input type="number" name="active" placeholder="Actifs" required>
+            <input type="number" step="any" name="latitude" placeholder="Latitude">
+            <input type="number" step="any" name="longitude" placeholder="Longitude">
+            <input type="text" name="who_region" placeholder="Région OMS">
+            <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
+            <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
+            <button type="submit">Ajouter</button>
+        </form>
+    </div>
+
+    <div class="data-table" id="data-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Pays</th>
+                    <th>Date</th>
+                    <th>Cas</th>
+                    <th>Décès</th>
+                    <th>Rétablis</th>
+                    <th>Actifs</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Région OMS</th>
+                    <th>Taux de mortalité</th>
+                    <th>Taux de guérison</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Les lignes seront ajoutées ici via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="pagination">
+        <button id="prevPage">◀ Précédent</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextPage">Suivant ▶</button>
+    </div>
+
+    <!-- Modal pour les options sur une ligne (déjà présent) -->
+    <div id="rowOptionsModal" class="popup hidden">
+        <div class="popup-content">
+        <h3>Options pour cette donnée</h3>
+        <p id="rowDetails"></p>
+        <button id="btnUpdateRow">Modifier</button>
+        <button id="btnDeleteRow">Supprimer</button>
+        <button id="btnCancelRow">Annuler</button>
+        </div>
+    </div>
+    
+    <!-- Modal pour la modification -->
+    <div id="updateModal" class="popup hidden">
+        <div class="popup-content">
+            <h3>Modifier la donnée</h3>
+            <form id="updateFormModal">
+                <input type="hidden" name="user_id" value="1">
+                <input type="text" name="country" placeholder="Pays" readonly>
+                <input type="date" name="date" placeholder="Date" readonly>
+                <input type="number" name="cases" placeholder="Cas" required>
+                <input type="number" name="deaths" placeholder="Décès" required>
+                <input type="number" name="recovered" placeholder="Rétablis" required>
+                <input type="number" name="active" placeholder="Actifs" required>
+                <input type="number" step="any" name="latitude" placeholder="Latitude">
+                <input type="number" step="any" name="longitude" placeholder="Longitude">
+                <input type="text" name="who_region" placeholder="Région OMS">
+                <input type="number" step="any" name="mortality_rate" placeholder="Taux de mortalité">
+                <input type="number" step="any" name="recovery_rate" placeholder="Taux de guérison">
+                <br>
+                <button type="submit">Enregistrer</button>
+                <button type="button" id="cancelUpdate">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+<script src="pandemics.js"></script>
+</body>
+</html>

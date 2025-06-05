@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableaux de Bord - BAAI</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="icon" type="image/x-icon" href="assets/icons/favicon.png">
+    <script src="scripts/verification.js" defer></script>
+    <script src="scripts/pandemics.js" defer></script>
+</head>
+<body>
+    <button id="logoutBtn" class="logout-btn" style="display: none;">Déconnexion</button>
+    <!-- Header -->
+    <div id="header"></div>
+    
+    <main>
+        <section id="dashboard-pandemics"></section>
+    </main>
+
+    <!-- Scripts chargés après l'injection -->
+    <script src="scripts/verification.js" defer></script>
+    <script src="scripts/pandemics.js" defer></script>
+    <script src="scripts/crud-pandemics.js" defer></script>
+</body>
+</html>

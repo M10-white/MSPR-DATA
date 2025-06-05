@@ -1,0 +1,324 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  --space: 1rem;
+  --bg: #09090b;
+  --fg: #e3e3e3;
+  --surface-1: #101012;
+  --surface-2: #27272a;
+  --surface-3: #52525b;
+  --ease-out: cubic-bezier(0.5, 1, 0.89, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --primary-color: #bbbbbb;
+  --secondary-color: #666666;
+  --text-color: #fff;
+  --background-color: #f8f8f8;
+  --border-color: #ddd;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  display: grid;
+  color: var(--fg);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+main {
+  grid-template-columns: repeat(var(--count, 1), 1fr);
+  gap: var(--space);
+  inline-size: min(var(--max, 15rem), 100%);
+  width: 100%;
+}
+
+/* Animations */
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInRight {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: fadeInRight 0.5s ease-out forwards;
+}
+
+.fade-in-down {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeInDown 0.5s ease-out forwards;
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Header spécifique */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--bg);
+  color: var(--text-color);
+}
+header h1 {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.8rem;
+  color: var(--fg);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'Poppins', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  padding-bottom: 5px;
+  user-select: none;
+  cursor: initial;
+  transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+header h1:hover {
+  transform: scale(1.05);
+  color: var(--highlight);
+}
+.header .logo-container {
+  display: flex;
+  align-items: center;
+}
+.header .logo {
+  height: auto;
+  margin-right: 10px;
+}
+.header .nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+.header .nav ul a {
+  text-decoration: none;
+  color: #fff;
+}
+.header .nav ul a:hover {
+  text-decoration: underline;
+}
+.header .nav li{
+  width: 100px;
+}
+.header .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-img {
+  height: auto;
+  width: 5%;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #666666;
+  color: #fff;
+}
+
+.back-button {
+  display: inline-block;
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: var(--bg);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  border: 1px solid var(--surface-2);
+}
+
+.back-button:hover {
+  transform: scale(1.05);
+  color: var(--highlight);
+  background-color: var(--surface-1);
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th, .data-table td {
+  padding: 0.8rem;
+  text-align: left;
+}
+.data-table th, .users-table th {
+  background-color: var(--surface-1);
+}
+
+/* Styles généraux pour les inputs, select et textarea dans les formulaires */
+form input[type="text"],
+form input[type="date"],
+form input[type="number"],
+form input[type="password"],
+form input[type="email"],
+form select,
+form textarea {
+  font-size: 1rem;                /* Taille de police standard */
+  padding: 0.4rem 0.6rem;         /* Un padding léger */
+  border: 1px solid var(--border-color); /* Utilise la variable pour la couleur de bordure */
+  border-radius: 4px;             /* Coins légèrement arrondis */
+  background-color: var(--surface-1); /* Fond sobre */
+  color: var(--fg);              /* Couleur du texte */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  margin: 0.3rem 0;              /* Espacement vertical */
+}
+
+/* Styles lors du focus sur les inputs */
+form input[type="text"]:focus,
+form input[type="date"]:focus,
+form input[type="number"]:focus,
+form select:focus,
+form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);  /* Met en valeur la bordure au focus */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour les boutons de formulaire */
+form button {
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+form button:hover {
+  background-color: var(--secondary-color);
+}
+
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  align-items: center;
+  background-color: var(--surface-1);
+}
+.filter-bar label {
+  font-weight: bold;
+}
+.filter-bar select, .filter-bar input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  color: #fff;
+  border: 1px solid var(--surface-2);
+  background-color: var(--surface-1);
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#content {
+  flex: 1;
+}
+
+#footer {
+  background-color: #f8f8f8;
+  text-align: center;
+}
+
+.logout-btn {
+  position: absolute;
+  right: 47%;
+  top: 3rem;
+  transform: translateY(-50%);
+  background-color: #ff6b6b;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #e63946;
+}
+
+.hidden {
+  display: none;
+}
